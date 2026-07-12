@@ -204,7 +204,7 @@ struct DetailView: View {
                             }
                         }
                         .onChange(of: selectedVideo, { _, newValue in
-                            if let new: Storage = newValue {
+                            if let _: Storage = newValue {
                                 selectedThumbnail = selectedVideo
                             }
                         })

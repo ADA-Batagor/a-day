@@ -88,21 +88,34 @@ class LocationManager: NSObject, ObservableObject {
         let locationString = String(format: "%+09.5f%+010.5f/", location.coordinate.latitude, location.coordinate.longitude)
         locationMetadata.value = locationString as NSString
         
-        exportSession.outputURL = tempURL
-        exportSession.outputFileType = .mp4
         exportSession.metadata = [locationMetadata]
         
-        exportSession.exportAsynchronously {
-            switch exportSession.status {
-            case .completed:
-                try? FileManager.default.removeItem(at: url)
-                try? FileManager.default.moveItem(at: tempURL, to: url)
-                print("Location added to video")
-            case .failed:
-                print("Export failed: \(exportSession.error?.localizedDescription ?? "unknown error")")
-                try? FileManager.default.removeItem(at: tempURL)
-            default:
-                break
+        if #available(iOS 18.0, *) {
+            Task {
+                do {
+                    try await exportSession.export(to: tempURL, as: .mp4)
+                    try? FileManager.default.removeItem(at: url)
+                    try FileManager.default.moveItem(at: tempURL, to: url)
+                } catch {
+                    print("Export failed: \(error.localizedDescription)")
+                    try? FileManager.default.removeItem(at: tempURL)
+                }
+            }
+        } else {
+            exportSession.outputURL = tempURL
+            exportSession.outputFileType = .mp4
+            exportSession.exportAsynchronously {
+                switch exportSession.status {
+                case .completed:
+                    try? FileManager.default.removeItem(at: url)
+                    try? FileManager.default.moveItem(at: tempURL, to: url)
+                    print("Location added to video")
+                case .failed:
+                    print("Export failed: \(exportSession.error?.localizedDescription ?? "unknown error")")
+                    try? FileManager.default.removeItem(at: tempURL)
+                default:
+                    break
+                }
             }
         }
     }
