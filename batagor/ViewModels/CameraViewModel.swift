@@ -114,7 +114,13 @@ class CameraViewModel: ObservableObject {
             // create thumbnail for 1 second mark
             let time = CMTime(seconds: 1, preferredTimescale: 600)
             do {
-                let cgImage = try imageGenerator.copyCGImage(at: time, actualTime: nil)
+                let cgImage: CGImage
+                if #available(iOS 18, *) {
+                    cgImage = try await imageGenerator.image(at: time).image
+                } else {
+                    cgImage = try imageGenerator.copyCGImage(at: time, actualTime: nil)
+                }
+                
                 if let thumbnailURL = storageManager.saveThumbnail(UIImage(cgImage: cgImage)) {
                     let storage = Storage(
                         createdAt: Date(),
