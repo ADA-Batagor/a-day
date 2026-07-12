@@ -39,7 +39,6 @@
 
 /* Begin PBXFileReference section */
 		3F764C722EB09ED70028EDD1 /* widgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = widgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		3F764C892EB0A8970028EDD1 /* widgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = widgetExtension.entitlements; sourceTree = "<group>"; };
 		3F764C8E2EB0A96C0028EDD1 /* SwiftData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftData.framework; path = System/Library/Frameworks/SwiftData.framework; sourceTree = SDKROOT; };
 		3FDD00D72EAF506300E14B66 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		3FDD00D92EAF506300E14B66 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
@@ -63,14 +62,14 @@
 				Core/Services/System/NavigationManager.swift,
 				"Extensions/Color+Ext.swift",
 				"Extensions/Font+Ext.swift",
-				"Font/SpaceGrotesk-Bold.ttf",
-				"Font/SpaceGrotesk-Light.ttf",
-				"Font/SpaceGrotesk-Medium.ttf",
-				"Font/SpaceGrotesk-Regular.ttf",
-				"Font/SpaceGrotesk-SemiBold.ttf",
-				Model/PlacemarkInfo.swift,
-				Model/Storage.swift,
-				View/Components/CircularProgress.swift,
+				"Fonts/SpaceGrotesk-Bold.ttf",
+				"Fonts/SpaceGrotesk-Light.ttf",
+				"Fonts/SpaceGrotesk-Medium.ttf",
+				"Fonts/SpaceGrotesk-Regular.ttf",
+				"Fonts/SpaceGrotesk-SemiBold.ttf",
+				Models/PlacemarkInfo.swift,
+				Models/Storage.swift,
+				Views/Shared/CircularProgress.swift,
 			);
 			target = 3F764C712EB09ED70028EDD1 /* widgetExtension */;
 		};
@@ -146,7 +145,6 @@
 		9E61FA002EA75DD200053854 = {
 			isa = PBXGroup;
 			children = (
-				3F764C892EB0A8970028EDD1 /* widgetExtension.entitlements */,
 				9E61FA0B2EA75DD200053854 /* batagor */,
 				3F764C752EB09ED70028EDD1 /* widget */,
 				3FDD00D62EAF506300E14B66 /* Frameworks */,
