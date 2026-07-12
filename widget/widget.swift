@@ -41,7 +41,7 @@ struct Provider: TimelineProvider {
     }
     
     @MainActor private func fetchRecentMedia(limit: Int) -> [Storage] {
-        let modelContext = SharedModelContainer.shared.mainContext
+        let modelContext = ModelContainerService.shared.mainContext
         
         let descriptor = FetchDescriptor<Storage>(
             sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
@@ -64,7 +64,7 @@ struct Provider: TimelineProvider {
     }
     
     @MainActor private func fetchCountMedia() -> Int {
-        let modelContext = SharedModelContainer.shared.mainContext
+        let modelContext = ModelContainerService.shared.mainContext
         
         let descriptor = FetchDescriptor<Storage>(
             sortBy: [SortDescriptor(\.createdAt, order: .reverse)]

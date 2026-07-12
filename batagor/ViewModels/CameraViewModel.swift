@@ -20,7 +20,7 @@ class CameraViewModel: ObservableObject {
     let storageManager = StorageManager.shared
     let orientationManager = OrientationManager.shared
     let locationManager = LocationManager()
-    let geocodeManager = ReverseGeocodeManager()
+    let geocodeManager = GeocodeManager()
     
     @Published var previewImage: Image?
     @Published var photoTaken: PhotoData?

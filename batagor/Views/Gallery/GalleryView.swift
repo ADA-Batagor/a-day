@@ -15,7 +15,7 @@ struct GalleryView: View {
     let TITLE_TOP_OFFSET: CGFloat = 70
     let SUBTITLE_TOP_OFFSET: CGFloat = 25
     
-    @EnvironmentObject var timer: SharedTimerManager
+    @EnvironmentObject var timer: TimerManager
     @EnvironmentObject var navigationManager: NavigationManager
     
     @Environment(\.modelContext) private var modelContext
@@ -653,6 +653,6 @@ struct GalleryView: View {
 
 #Preview {
     GalleryView()
-        .environmentObject(SharedTimerManager.shared)
+        .environmentObject(TimerManager.shared)
         .environmentObject(NavigationManager.shared)
 }

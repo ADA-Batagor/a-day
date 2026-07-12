@@ -1,5 +1,5 @@
 //
-//  Vibration.swift
+//  HapticManager.swift
 //  batagor
 //
 //  Created by Tude Maha on 24/10/2025.

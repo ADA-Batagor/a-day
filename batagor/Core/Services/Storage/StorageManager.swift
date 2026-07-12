@@ -15,7 +15,7 @@ class StorageManager {
     private let thumbnailsDirectory: URL
     
     private init() {
-        guard let sharedContainer = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: SharedModelContainer.appGroupIdentifier) else {
+        guard let sharedContainer = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: ModelContainerService.appGroupIdentifier) else {
             fatalError("Shared container not found")
         }
         
