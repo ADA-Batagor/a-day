@@ -8,7 +8,7 @@
 import UIKit
 import AVFoundation
 
-class CameraManager: NSObject {
+class CameraManager: NSObject, @unchecked Sendable {
     //    create a new capture session from AVFoundation
     private let captureSession = AVCaptureSession()
     
