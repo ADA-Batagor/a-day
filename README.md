@@ -1,6 +1,12 @@
-# A Day 🚮
+<p align="center">
+  <img src="batagor/Resources/Assets.xcassets/AppIcon.appiconset/A%20day-App%20Icon.png" width="128" height="128" style="border-radius: 22%;" alt="A Day App Icon" />
+</p>
 
-Temporary storage for photos and videos. Prevent digital clutter from filling up your device!
+<h1 align="center">A Day</h1>
+
+<p align="center">
+  <strong>Temporary storage for photos and videos. Prevent digital clutter from filling up your device!</strong>
+</p>
 
 ---
 
