@@ -62,13 +62,13 @@
 				Core/Services/System/NavigationManager.swift,
 				"Extensions/Color+Ext.swift",
 				"Extensions/Font+Ext.swift",
-				"Fonts/SpaceGrotesk-Bold.ttf",
-				"Fonts/SpaceGrotesk-Light.ttf",
-				"Fonts/SpaceGrotesk-Medium.ttf",
-				"Fonts/SpaceGrotesk-Regular.ttf",
-				"Fonts/SpaceGrotesk-SemiBold.ttf",
 				Models/PlacemarkInfo.swift,
 				Models/Storage.swift,
+				"Resources/Fonts/SpaceGrotesk-Bold.ttf",
+				"Resources/Fonts/SpaceGrotesk-Light.ttf",
+				"Resources/Fonts/SpaceGrotesk-Medium.ttf",
+				"Resources/Fonts/SpaceGrotesk-Regular.ttf",
+				"Resources/Fonts/SpaceGrotesk-SemiBold.ttf",
 				Views/Shared/CircularProgress.swift,
 			);
 			target = 3F764C712EB09ED70028EDD1 /* widgetExtension */;
@@ -485,7 +485,7 @@
 				CODE_SIGN_ENTITLEMENTS = batagor/batagor.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"batagor/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"batagor/Resources/Preview Content\"";
 				DEVELOPMENT_TEAM = HRYT2ZQSJ5;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -532,7 +532,7 @@
 				CODE_SIGN_ENTITLEMENTS = batagor/batagor.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"batagor/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"batagor/Resources/Preview Content\"";
 				DEVELOPMENT_TEAM = HRYT2ZQSJ5;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
