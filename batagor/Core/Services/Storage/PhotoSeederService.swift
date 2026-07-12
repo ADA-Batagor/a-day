@@ -1,5 +1,5 @@
 //
-//  PhotoSeeder.swift
+//  PhotoSeederService.swift
 //  batagor
 //
 //  Created by Gede Pramananda Kusuma Wisesa on 22/10/25.
@@ -9,8 +9,8 @@ import Foundation
 import SwiftData
 import UIKit
 
-class PhotoSeeder {
-    static let shared = PhotoSeeder()
+class PhotoSeederService {
+    static let shared = PhotoSeederService()
     
     @MainActor
     func seed(modelContext: ModelContext) {

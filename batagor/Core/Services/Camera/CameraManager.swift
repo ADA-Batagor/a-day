@@ -258,7 +258,7 @@ class CameraManager: NSObject {
             movieFileOutputConnection.videoRotationAngle = self.newRotationAngle
         }
         
-        guard let directoryPath = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: SharedModelContainer.appGroupIdentifier) else {
+        guard let directoryPath = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: ModelContainerService.appGroupIdentifier) else {
             print("cannot access local file domain")
             return
         }
