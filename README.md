@@ -12,7 +12,7 @@
 
 ## 📋 Project Information
 
-**A Day** is an iOS application designed to help users capture and store temporary photos and videos. Instead of cluttering the system library with temporary media (like recipes, parking spot photos, or quick references), Batagor stores them in an isolated, shared sandbox with automatic background deletion once their expiry duration has passed.
+**A Day** is an iOS application designed to help users capture and store temporary photos and videos. Instead of cluttering the system library with temporary media (like recipes, parking spot photos, receipts, or quick references), Batagor stores them in an isolated, shared sandbox with automatic background deletion once their expiry duration has passed.
 
 ### Key Features
 
@@ -40,7 +40,6 @@ To build and run Batagor, ensure your development environment meets the followin
 Since A Day relies on App Groups to share database records and media assets between the main app and the home screen widget, you need to configure App Groups before running on a physical device.
 
 ### Step 1: Clone and Open
-
 1. Clone this repository to your local directory.
 2. Open `batagor.xcodeproj` using Xcode.
 
@@ -50,7 +49,7 @@ Since A Day relies on App Groups to share database records and media assets betw
 2. Under **Targets**, select the **batagor** target.
 3. Navigate to the **Signing & Capabilities** tab.
 4. Select your **Team** to resolve provisioning profile errors.
-5. In the **App Groups** section, verify or a unique package name (if using a custom group, update the `GroupAppBundleIdentifier` value inside `Info.plist`).
+5. In the **App Groups** section, verify or add `group.com.tudemaha.lawar` (if using a custom group, update the `GroupAppBundleIdentifier` value inside `Info.plist`).
 6. Repeat the same signing configuration steps for the **widget** target.
 
 ### Step 4: Run the Application
