@@ -66,10 +66,10 @@
 				"Font/SpaceGrotesk-SemiBold.ttf",
 				Model/PlacemarkInfo.swift,
 				Model/Storage.swift,
-				Utils/NavigationManager.swift,
-				Utils/SharedModelContainer.swift,
-				Utils/StorageManager.swift,
-				Utils/TimeFormatter.swift,
+				"Core/Services/System/NavigationManager.swift",
+				"Core/Services/Storage/SharedModelContainer.swift",
+				"Core/Services/Storage/StorageManager.swift",
+				"Core/Helpers/TimeFormatter.swift",
 				View/Components/CircularProgress.swift,
 			);
 			target = 3F764C712EB09ED70028EDD1 /* widgetExtension */;
