@@ -57,6 +57,10 @@
 		3F764C8B2EB0A8DF0028EDD1 /* Exceptions for "batagor" folder in "widgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Core/Helpers/TimeFormatter.swift,
+				Core/Services/Storage/SharedModelContainer.swift,
+				Core/Services/Storage/StorageManager.swift,
+				Core/Services/System/NavigationManager.swift,
 				"Extensions/Color+Ext.swift",
 				"Extensions/Font+Ext.swift",
 				"Font/SpaceGrotesk-Bold.ttf",
@@ -66,10 +70,6 @@
 				"Font/SpaceGrotesk-SemiBold.ttf",
 				Model/PlacemarkInfo.swift,
 				Model/Storage.swift,
-				"Core/Services/System/NavigationManager.swift",
-				"Core/Services/Storage/SharedModelContainer.swift",
-				"Core/Services/Storage/StorageManager.swift",
-				"Core/Helpers/TimeFormatter.swift",
 				View/Components/CircularProgress.swift,
 			);
 			target = 3F764C712EB09ED70028EDD1 /* widgetExtension */;
@@ -298,7 +298,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
-				CODE_SIGN_ENTITLEMENTS = widgetExtension.entitlements;
+				CODE_SIGN_ENTITLEMENTS = widget/widgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = HRYT2ZQSJ5;
@@ -331,7 +331,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
-				CODE_SIGN_ENTITLEMENTS = widgetExtension.entitlements;
+				CODE_SIGN_ENTITLEMENTS = widget/widgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = HRYT2ZQSJ5;
