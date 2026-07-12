@@ -14,7 +14,7 @@ struct Camera: View {
     
     @Environment(\.modelContext) private var modelContext
     
-    @EnvironmentObject var timer: SharedTimerManager
+    @EnvironmentObject var timer: TimerManager
     @EnvironmentObject var navigationManager: NavigationManager
     
     @StateObject private var cameraViewModel = CameraViewModel()
@@ -236,5 +236,5 @@ struct Camera: View {
 
 #Preview {
     Camera()
-        .environmentObject(SharedTimerManager.shared)
+        .environmentObject(TimerManager.shared)
 }

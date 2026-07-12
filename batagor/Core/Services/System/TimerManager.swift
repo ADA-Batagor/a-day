@@ -1,5 +1,5 @@
 //
-//  BackroundTaskManager.swift
+//  TimerManager.swift
 //  batagor
 //
 //  Created by Tude Maha on 28/10/2025.
@@ -8,8 +8,8 @@
 import Foundation
 import Combine
 
-class SharedTimerManager: ObservableObject {
-    static let shared = SharedTimerManager()
+class TimerManager: ObservableObject {
+    static let shared = TimerManager()
     
     @Published var currentTime = Date()
     private var cancellable: AnyCancellable?

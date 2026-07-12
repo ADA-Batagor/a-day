@@ -1,5 +1,5 @@
 //
-//  SharedModelContainer.swift
+//  ModelContainerService.swift
 //  batagor
 //
 //  Created by Gede Pramananda Kusuma Wisesa on 27/10/25.
@@ -8,7 +8,7 @@
 import Foundation
 import SwiftData
 
-class SharedModelContainer {
+class ModelContainerService {
     static let appGroupIdentifier = Bundle.main.object(forInfoDictionaryKey: "GroupAppBundleIdentifier") as! String
     
     static let shared: ModelContainer = {

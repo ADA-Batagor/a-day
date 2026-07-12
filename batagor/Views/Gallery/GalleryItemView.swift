@@ -19,7 +19,7 @@ struct GalleryItemView: View {
     @State private var showCover: Bool = false
     @State private var videoDuration: Double?
     
-    @StateObject private var geocodeManager = ReverseGeocodeManager()
+    @StateObject private var geocodeManager = GeocodeManager()
     
     var body: some View {
         ZStack (alignment: .bottomLeading) {
@@ -117,5 +117,5 @@ struct GalleryItemView: View {
         thumbnailPath: URL(string: "https://images.unsplash.com/photo-1761405378282-e819a65cb493?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1364")!
         
     ), isSelecting: .constant(false), isSelected: .constant(true), isSwiped: .constant(false))
-    .environmentObject(SharedTimerManager.shared)
+    .environmentObject(TimerManager.shared)
 }

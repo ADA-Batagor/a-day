@@ -57,7 +57,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Core/Helpers/TimeFormatter.swift,
-				Core/Services/Storage/SharedModelContainer.swift,
+				Core/Services/Storage/ModelContainerService.swift,
 				Core/Services/Storage/StorageManager.swift,
 				Core/Services/System/NavigationManager.swift,
 				"Extensions/Color+Ext.swift",
