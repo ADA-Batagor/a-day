@@ -104,7 +104,7 @@ struct Camera: View {
                                             }
                                     )
                             }
-                            
+//                            
                             if cameraViewModel.camera.isRunning && !cameraViewModel.camera.isPreviewPaused {
                                 CameraToolbar(
                                     cameraViewModel: cameraViewModel,
@@ -164,7 +164,25 @@ struct Camera: View {
                     .padding(.leading, 8)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    GalleryCount(currentCount: storages.count, foregroundColor: Color.lightBase, countOnly: true)
+                    HStack(alignment: .center) {
+                        Button {
+                            cameraViewModel.camera.cycleFlash()
+                        } label: {
+                            Image(
+                                systemName: cameraViewModel.camera.flashMode.iconName
+                            )
+                            .font(.system(size: 12))
+                            .foregroundColor(.white)
+                            .padding(5)
+                            .background(
+                                cameraViewModel.camera.flashMode.rawValue == 2 ? Color.adaySecondary : Color.white
+                                    .opacity(0.4)
+                            )
+                            .clipShape(Circle())
+                        }
+                        
+                        GalleryCount(currentCount: storages.count, foregroundColor: Color.lightBase, countOnly: true)
+                    }
                 }
             }
             .ignoresSafeArea(.all)
@@ -213,23 +231,6 @@ struct Camera: View {
             configuration.label
                 .scaleEffect(configuration.isPressed ? 0.85 : 1.0)
                 .animation(.easeInOut(duration: 0.15), value: configuration.isPressed)
-        }
-    }
-    
-    struct FocusIndicator: View {
-        @State private var scale: CGFloat = 1.2
-        
-        var body: some View {
-            Rectangle()
-                .stroke(Color.yellow, lineWidth: 2)
-                .frame(width: 70, height: 70)
-                .scaleEffect(scale)
-                .opacity(scale > 1.0 ? 0.0 : 1.0)
-                .onAppear {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                        scale = 1.0
-                    }
-                }
         }
     }
 }

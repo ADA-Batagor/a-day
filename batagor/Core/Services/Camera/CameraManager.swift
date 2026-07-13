@@ -49,6 +49,9 @@ class CameraManager: NSObject, @unchecked Sendable {
     
     private var selectedAudioDevice: AVCaptureDevice?
     
+//    flash mode init
+    var flashMode: FlashCycle = .off
+    
 //    handle rotation
     var previewLayer: AVCaptureVideoPreviewLayer?
     private var rotationCoordinator: AVCaptureDevice.RotationCoordinator?
@@ -247,12 +250,19 @@ class CameraManager: NSObject, @unchecked Sendable {
         }
     }
     
+    //    flash mode cycle
+    func cycleFlash() {
+        flashMode.next()
+    }
+    
     //    start record video
     func startRecordingVideo() {
         guard let movieFileOutput = self.movieFileOutput else {
             print("cannot find movie file output")
             return
         }
+        
+        applyTorch()
         
         if let movieFileOutputConnection = movieFileOutput.connection(with: .video) {
             movieFileOutputConnection.videoRotationAngle = self.newRotationAngle
@@ -280,6 +290,29 @@ class CameraManager: NSObject, @unchecked Sendable {
         }
         
         movieFileOutput.stopRecording()
+        setTorch(false)
+    }
+    
+    private func applyTorch() {
+        switch self.flashMode {
+        case .off:
+            setTorch(false)
+        case .auto:
+            setTorch(true)
+        case .on:
+            setTorch(true)
+        }
+    }
+    
+    private func setTorch(_ on: Bool) {
+        guard let device = selectedCaptureDevice, device.hasTorch, device.isTorchAvailable else { return }
+        do {
+            try device.lockForConfiguration()
+            device.torchMode = on ? .on : .off
+            device.unlockForConfiguration()
+        } catch {
+            print("Torch error: \(error)")
+        }
     }
     
     //    take photo
@@ -297,7 +330,9 @@ class CameraManager: NSObject, @unchecked Sendable {
             }
             
             let isFlashAvailable = self.deviceInput?.device.isFlashAvailable ?? false
-            photoSettings.flashMode = isFlashAvailable ? .auto : .off
+            if isFlashAvailable {
+                photoSettings.flashMode = self.flashMode.photoFlashMode
+            }
             
             if let previewPhotoPixelFormatType = photoSettings.availablePreviewPhotoPixelFormatTypes.first {
                 photoSettings.previewPhotoFormat = [kCVPixelBufferPixelFormatTypeKey as String: previewPhotoPixelFormatType]
