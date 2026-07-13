@@ -62,6 +62,7 @@
 				Core/Services/System/NavigationManager.swift,
 				"Extensions/Color+Ext.swift",
 				"Extensions/Font+Ext.swift",
+				Models/FlashCycle.swift,
 				Models/PlacemarkInfo.swift,
 				Models/Storage.swift,
 				"Resources/Fonts/SpaceGrotesk-Bold.ttf",
