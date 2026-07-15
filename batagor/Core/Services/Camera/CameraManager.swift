@@ -646,7 +646,7 @@ extension CameraManager: AVCaptureFileOutputRecordingDelegate {
                     } else if nsError.code == AVError.sessionWasInterrupted.rawValue {
                         self.interruptionMessage = "Cannot start recording, camera is in use by another app"
                     } else {
-                        self.interruptionMessage = "Cannot start recording, \(nsError.localizedDescription)"
+                        self.interruptionMessage = "Cannot start recording, camera might be used by another app"
                     }
                 }
                 
