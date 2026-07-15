@@ -64,17 +64,17 @@ struct CameraToolbar: View {
                     Circle()
                         .trim(from: 0, to: (currentDuration / movieDurationLimit))
                         .stroke(style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                        .fill(storageCount >= 24 ? .gray : Color.lightBase)
+                        .fill((storageCount >= 24 || cameraViewModel.isCameraInterrupted) ? .gray : Color.lightBase)
                         .rotationEffect(.degrees(-90))
                 } else {
                     Circle()
                         .stroke(lineWidth: lineWidth)
-                        .fill(storageCount >= 24 ? .gray : Color.lightBase)
+                        .fill((storageCount >= 24 || cameraViewModel.isCameraInterrupted) ? .gray : Color.lightBase)
                 }
                 
                 Circle()
                     .inset(by: lineWidth * 1.2)
-                    .fill(storageCount >= 24 ? .gray : isRecording ? .red : Color.lightBase)
+                    .fill((storageCount >= 24 || cameraViewModel.isCameraInterrupted) ? .gray : isRecording ? .red : Color.lightBase)
                     .scaleEffect(isPressed ? 0.85 : 1.0)
                     .frame(height: isRecording ? 120 : 75)
                     .onTapGesture {
@@ -97,6 +97,7 @@ struct CameraToolbar: View {
                         })
                     }
                     .onLongPressGesture {
+                        guard !cameraViewModel.isCameraInterrupted else { return }
                         withAnimation(.easeInOut(duration: 0.15)) {
                             isPressed = true
                             isRecording = true
@@ -104,7 +105,10 @@ struct CameraToolbar: View {
                         
                         HapticManager.shared.impact(.light)
                         cameraViewModel.camera.startRecordingVideo()
-                    } onPressingChanged: { _ in
+                    } onPressingChanged: { pressing in
+                        if pressing {
+                            guard !cameraViewModel.isCameraInterrupted else { return }
+                        }
                         cameraViewModel.camera.stopRecordingVideo()
                         if isRecording {
                             HapticManager.shared.impact(.light)
@@ -134,7 +138,7 @@ struct CameraToolbar: View {
                 
             }
             .frame(height: 75)
-            .disabled(storageCount >= 24 ? true : false)
+            .disabled(storageCount >= 24 || cameraViewModel.isCameraInterrupted)
             
             Spacer()
             

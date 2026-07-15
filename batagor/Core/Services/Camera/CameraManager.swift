@@ -308,9 +308,13 @@ class CameraManager: NSObject, ObservableObject, @unchecked Sendable {
                         self.interruptionMessage = "Camera unavailable"
                     }
                 case .sensitiveContentMitigationActivated:
-                    self.interruptionMessage = "Camera unavailable due to sensitive content restrictions"
+                    DispatchQueue.main.async {
+                        self.interruptionMessage = "Camera unavailable due to sensitive content restrictions"
+                    }
                 @unknown default:
-                    break
+                    DispatchQueue.main.async {
+                        self.interruptionMessage = "Camera session was interrupted"
+                    }
                 }
             }
             .store(in: &cancellables)
@@ -324,6 +328,11 @@ class CameraManager: NSObject, ObservableObject, @unchecked Sendable {
                 DispatchQueue.main.async {
                     self?.isInterrupted = false
                     self?.interruptionMessage = nil
+                }
+                self?.sessionQueue.async {
+                    if self?.captureSession.isRunning == false {
+                        self?.captureSession.startRunning()
+                    }
                 }
             }
             .store(in: &cancellables)
@@ -576,6 +585,13 @@ class CameraManager: NSObject, ObservableObject, @unchecked Sendable {
         
         return .authorized
     }
+
+    func resetInterruption() {
+        DispatchQueue.main.async {
+            self.isInterrupted = false
+            self.interruptionMessage = nil
+        }
+    }
 }
 
 extension CameraManager: AVCapturePhotoCaptureDelegate {
@@ -604,10 +620,38 @@ extension CameraManager: AVCaptureFileOutputRecordingDelegate {
         DispatchQueue.main.async {
             self.isRecordingMovie = false
         }
+        
+        var recordingSuccess = true
         if let error = error {
             print("file output error: \(error.localizedDescription)")
+            
+            let nsError = error as NSError
+            if let successfullyFinished = nsError.userInfo[AVErrorRecordingSuccessfullyFinishedKey] as? Bool {
+                recordingSuccess = successfullyFinished
+            } else {
+                recordingSuccess = false
+            }
+            
+            if !recordingSuccess {
+                DispatchQueue.main.async {
+                    self.isInterrupted = true
+                    if nsError.code == AVError.diskFull.rawValue {
+                        self.interruptionMessage = "Cannot start recording, disk is full"
+                    } else if nsError.code == AVError.sessionWasInterrupted.rawValue {
+                        self.interruptionMessage = "Cannot start recording, camera is in use by another app"
+                    } else {
+                        self.interruptionMessage = "Cannot start recording, \(nsError.localizedDescription)"
+                    }
+                }
+                
+                // Clean up the file
+                try? FileManager.default.removeItem(at: outputFileURL)
+            }
         }
-        addToMovieFileStream?(outputFileURL)
+        
+        if recordingSuccess {
+            addToMovieFileStream?(outputFileURL)
+        }
     }
 }
 

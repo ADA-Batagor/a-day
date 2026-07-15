@@ -10,6 +10,7 @@ import SwiftUI
 import SwiftData
 import WidgetKit
 import CoreLocation
+import Combine
 
 @MainActor
 class CameraViewModel: ObservableObject {
@@ -27,9 +28,31 @@ class CameraViewModel: ObservableObject {
     @Published var movieFileURL: URL?
     @Published var showCameraPermissionAlert = false
     @Published var showMicrophonePermissionAlert = false
+    @Published var isCameraInterrupted = false
+    @Published var cameraInterruptionMessage: String? = nil
+    @Published var showInterruptionAlert = false
+    
+    private var cancellables = Set<AnyCancellable>()
     
     init() {
         locationManager.requestPermission()
+        
+        camera.$isInterrupted
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isInterrupted in
+                self?.isCameraInterrupted = isInterrupted
+            }
+            .store(in: &cancellables)
+            
+        camera.$interruptionMessage
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] message in
+                self?.cameraInterruptionMessage = message
+                if message != nil {
+                    self?.showInterruptionAlert = true
+                }
+            }
+            .store(in: &cancellables)
         
         Task {
             await handleCameraPreview()
@@ -156,7 +179,13 @@ class CameraViewModel: ObservableObject {
             WidgetCenter.shared.reloadAllTimelines()
         }
         
-        movieFileURL = nil
+    }
+    
+    func resetInterruption() {
+        camera.resetInterruption()
+        Task {
+            await startCamera()
+        }
     }
     
     private func unpackPhoto(_ photo: AVCapturePhoto) -> PhotoData? {
