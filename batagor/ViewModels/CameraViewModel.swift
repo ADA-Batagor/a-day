@@ -183,6 +183,7 @@ class CameraViewModel: ObservableObject {
     
     func resetInterruption() {
         camera.resetInterruption()
+        camera.isPreviewPaused = false
         Task {
             await startCamera()
         }

@@ -620,6 +620,12 @@ extension CameraManager: AVCaptureFileOutputRecordingDelegate {
         DispatchQueue.main.async {
             self.isRecordingMovie = false
         }
+        self.sessionQueue.async {
+            if let currentOutput = self.movieFileOutput {
+                self.captureSession.removeOutput(currentOutput)
+                self.movieFileOutput = nil
+            }
+        }
         
         var recordingSuccess = true
         if let error = error {
