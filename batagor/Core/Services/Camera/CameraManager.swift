@@ -7,12 +7,13 @@
 
 import UIKit
 import AVFoundation
+import Combine
 
 enum ADayPermissionStatus {
     case authorized, cameraDenied, microphoneDenied
 }
 
-class CameraManager: NSObject, @unchecked Sendable {
+class CameraManager: NSObject, ObservableObject, @unchecked Sendable {
     //    create a new capture session from AVFoundation
     private let captureSession = AVCaptureSession()
     
@@ -134,6 +135,14 @@ class CameraManager: NSObject, @unchecked Sendable {
     
     //    preview output
     var isPreviewPaused = false
+
+    // MARK: - Interruption State
+
+    @Published var isInterrupted = false
+    @Published var interruptionMessage: String?
+    @Published var isRecordingMovie = false
+
+    private var cancellables = Set<AnyCancellable>()
     private var addToPreviewStream: ((CIImage) -> Void)?
     lazy var previewStream: AsyncStream<CIImage> = {
         AsyncStream { continuation in
@@ -174,6 +183,7 @@ class CameraManager: NSObject, @unchecked Sendable {
         sessionQueue = DispatchQueue.init(label: Bundle.main.object(forInfoDictionaryKey: "MainAppBundleIdentifier") as! String)
         selectedCaptureDevice = availableCaptureDevices.first ?? AVCaptureDevice.default(for: .video)
         selectedAudioDevice = availableAudioDevices.first ?? AVCaptureDevice.default(for: .audio)
+        observeInterruptions()
     }
     
     //    start capture session
@@ -261,8 +271,68 @@ class CameraManager: NSObject, @unchecked Sendable {
         flashMode.next()
     }
     
+    // MARK: - Interruptions
+
+    private func observeInterruptions() {
+        NotificationCenter.default.publisher(for: .AVCaptureSessionWasInterrupted, object: captureSession)
+            .sink { [weak self] notification in
+                guard let self else { return }
+                DispatchQueue.main.async {
+                    self.isInterrupted = true
+                }
+
+                guard let userInfo = notification.userInfo,
+                      let reasonValue = userInfo[AVCaptureSessionInterruptionReasonKey] as? Int,
+                      let reason = AVCaptureSession.InterruptionReason(rawValue: reasonValue) else {
+                    return
+                }
+
+                switch reason {
+                case .videoDeviceInUseByAnotherClient, .audioDeviceInUseByAnotherClient:
+                    // Only surface the alert if the user was actively recording a movie.
+                    // Photo capture stays silently disabled, matching native Camera app behaviour.
+                    if self.isRecordingMovie {
+                        DispatchQueue.main.async {
+                            self.interruptionMessage = "Can't record while camera is in use by another app"
+                        }
+                    }
+                case .videoDeviceNotAvailableInBackground,
+                     .videoDeviceNotAvailableWithMultipleForegroundApps,
+                     .videoDeviceNotAvailableDueToSystemPressure:
+                    DispatchQueue.main.async {
+                        self.interruptionMessage = "Camera unavailable"
+                    }
+                @unknown default:
+                    break
+                }
+            }
+            .store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: .AVCaptureSessionInterruptionEnded, object: captureSession)
+            .sink { [weak self] _ in
+                DispatchQueue.main.async {
+                    self?.isInterrupted = false
+                    self?.interruptionMessage = nil
+                }
+            }
+            .store(in: &cancellables)
+    }
+
     //    start record video
     func startRecordingVideo() {
+        guard !isInterrupted else {
+            DispatchQueue.main.async {
+                self.interruptionMessage = "Can't record while camera is in use by another app"
+            }
+            return
+        }
+
+        let movieFileOutput = AVCaptureMovieFileOutput()
+        if captureSession.canAddOutput(movieFileOutput) {
+            captureSession.addOutput(movieFileOutput)
+            self.movieFileOutput = movieFileOutput
+        }
+        
         guard let movieFileOutput = self.movieFileOutput else {
             print("cannot find movie file output")
             return
@@ -365,7 +435,6 @@ class CameraManager: NSObject, @unchecked Sendable {
             completionHandler(success)
         }
         
-        let movieFileOutput = AVCaptureMovieFileOutput()
         let photoOutput = AVCapturePhotoOutput()
         captureSession.sessionPreset = AVCaptureSession.Preset.high
         
@@ -408,11 +477,9 @@ class CameraManager: NSObject, @unchecked Sendable {
         
         captureSession.addOutput(photoOutput)
         captureSession.addOutput(videoOutput)
-        captureSession.addOutput(movieFileOutput)
         
         self.photoOutput = photoOutput
         self.videoOutput = videoOutput
-        self.movieFileOutput = movieFileOutput
         
         photoOutput.maxPhotoQualityPrioritization = .balanced
         
@@ -511,11 +578,24 @@ extension CameraManager: AVCapturePhotoCaptureDelegate {
 }
 
 extension CameraManager: AVCaptureFileOutputRecordingDelegate {
-    func fileOutput(_ output: AVCaptureFileOutput, didFinishRecordingTo outputFileURL: URL, from connections: [AVCaptureConnection], error: (any Error)?) {
+    func fileOutput(_ output: AVCaptureFileOutput,
+                    didStartRecordingTo fileURL: URL,
+                    from connections: [AVCaptureConnection]) {
+        DispatchQueue.main.async {
+            self.isRecordingMovie = true
+        }
+    }
+
+    func fileOutput(_ output: AVCaptureFileOutput,
+                    didFinishRecordingTo outputFileURL: URL,
+                    from connections: [AVCaptureConnection],
+                    error: (any Error)?) {
+        DispatchQueue.main.async {
+            self.isRecordingMovie = false
+        }
         if let error = error {
             print("file output error: \(error.localizedDescription)")
         }
-        
         addToMovieFileStream?(outputFileURL)
     }
 }
