@@ -365,33 +365,38 @@ class CameraManager: NSObject, @unchecked Sendable {
             completionHandler(success)
         }
         
-        guard
-            let selectedCaptureDevice = selectedCaptureDevice,
-            let selectedAudioDevice = selectedAudioDevice,
-            let deviceInput = try? AVCaptureDeviceInput(device: selectedCaptureDevice),
-            let audioInput = try? AVCaptureDeviceInput(device: selectedAudioDevice)
-        else {
-            print("failed obtain video input")
-            return
-        }
-        
         let movieFileOutput = AVCaptureMovieFileOutput()
-        
         let photoOutput = AVCapturePhotoOutput()
-//        captureSession.sessionPreset = AVCaptureSession.Preset.photo
         captureSession.sessionPreset = AVCaptureSession.Preset.high
         
         let videoOutput = AVCaptureVideoDataOutput()
         videoOutput.setSampleBufferDelegate(self, queue: DispatchQueue(label: Bundle.main.object(forInfoDictionaryKey: "MainAppBundleIdentifier") as! String + ".output"))
         
+        guard
+            let selectedCaptureDevice = selectedCaptureDevice,
+            let deviceInput = try? AVCaptureDeviceInput(device: selectedCaptureDevice)
+        else {
+            print("failed obtain video input")
+            return
+        }
+        
         guard captureSession.canAddInput(deviceInput) else {
             print("can't add video device input to capture session")
             return
         }
-        guard captureSession.canAddInput(audioInput) else {
-            print("can't add audio device input to capture session")
-            return
+        captureSession.addInput(deviceInput)
+        self.deviceInput = deviceInput
+        
+        // do not fail the camera preview if microphone is being used by other apps
+        if let selectedAudioDevice = selectedAudioDevice,
+           let audioInput = try? AVCaptureDeviceInput(device: selectedAudioDevice),
+           captureSession.canAddInput(audioInput) {
+            captureSession.addInput(audioInput)
+            self.audioInput = audioInput
+        } else {
+            print("Warning: Microphone input is currently unavailable and has been skipped.")
         }
+        
         guard captureSession.canAddOutput(photoOutput) else {
             print("can't add photo output to capture session")
             return
@@ -401,14 +406,10 @@ class CameraManager: NSObject, @unchecked Sendable {
             return
         }
         
-        captureSession.addInput(deviceInput)
-        captureSession.addInput(audioInput)
         captureSession.addOutput(photoOutput)
         captureSession.addOutput(videoOutput)
         captureSession.addOutput(movieFileOutput)
         
-        self.deviceInput = deviceInput
-        self.audioInput = audioInput
         self.photoOutput = photoOutput
         self.videoOutput = videoOutput
         self.movieFileOutput = movieFileOutput
