@@ -1,0 +1,10 @@
+# CODEOWNERS
+#
+# GitHub auto-requests a review from the matching owner(s) whenever a PR
+# touches the covered paths. See BAT-13 (Workflow Strategy) and the Linear
+# "Workflow Conventions" doc for the full git/PR review process.
+#
+# Team is small enough that all 3 contributors own everything for now —
+# split this out by path once the codebase grows areas with clear owners.
+
+* @fuadfajri @pramakusuma @tudemaha
