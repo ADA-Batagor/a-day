@@ -25,6 +25,8 @@ class CameraViewModel: ObservableObject {
     @Published var previewImage: Image?
     @Published var photoTaken: PhotoData?
     @Published var movieFileURL: URL?
+    @Published var showCameraPermissionAlert = false
+    @Published var showMicrophonePermissionAlert = false
     
     init() {
         locationManager.requestPermission()
@@ -39,6 +41,18 @@ class CameraViewModel: ObservableObject {
         
         Task {
             await handleCameraMovie()
+        }
+    }
+    
+    func startCamera() async {
+        let status = await camera.start()
+        switch status {
+        case .authorized:
+            break
+        case .cameraDenied:
+            showCameraPermissionAlert = true
+        case .microphoneDenied:
+            showMicrophonePermissionAlert = true
         }
     }
     

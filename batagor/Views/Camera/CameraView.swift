@@ -188,7 +188,37 @@ struct Camera: View {
             .ignoresSafeArea(.all)
         }
         .task {
-            await cameraViewModel.camera.start()
+            await cameraViewModel.startCamera()
+        }
+        .alert(
+            "Camera Access Required",
+            isPresented: $cameraViewModel.showCameraPermissionAlert
+        ) {
+            Button("Open Settings") {
+                if let settingsURL = URL(
+                    string: UIApplication.openSettingsURLString
+                ) {
+                    UIApplication.shared.open(settingsURL)
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("A Day needs camera access to take photos and record videos. Please enable it in Settings.")
+        }
+        .alert(
+            "Microphone Access Required",
+            isPresented: $cameraViewModel.showMicrophonePermissionAlert
+        ) {
+            Button("Open Settings") {
+                if let settingsURL = URL(
+                    string: UIApplication.openSettingsURLString
+                ) {
+                    UIApplication.shared.open(settingsURL)
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("A Day needs microphone access to record audio in your videos. Please enable it in Settings.")
         }
         .onAppear {
             if storages.count >= MEDIA_LIMIT {

@@ -8,6 +8,10 @@
 import UIKit
 import AVFoundation
 
+enum ADayPermissionStatus {
+    case authorized, cameraDenied, microphoneDenied
+}
+
 class CameraManager: NSObject, @unchecked Sendable {
     //    create a new capture session from AVFoundation
     private let captureSession = AVCaptureSession()
@@ -173,9 +177,9 @@ class CameraManager: NSObject, @unchecked Sendable {
     }
     
     //    start capture session
-    func start() async {
+    func start() async -> ADayPermissionStatus {
         let authorized = await checkAuthorization()
-        guard authorized else { return }
+        guard authorized == .authorized else { return authorized }
         
         if isCaptureSessionConfigured {
             if !captureSession.isRunning {
@@ -183,7 +187,7 @@ class CameraManager: NSObject, @unchecked Sendable {
                     self.captureSession.startRunning()
                 }
             }
-            return
+            return .authorized
         }
         
         sessionQueue.async { [self] in
@@ -192,6 +196,8 @@ class CameraManager: NSObject, @unchecked Sendable {
                 self.captureSession.startRunning()
             }
         }
+        
+        return .authorized
     }
     
     //    stop capture session
@@ -464,26 +470,32 @@ class CameraManager: NSObject, @unchecked Sendable {
     }
     
     //    check autorization for camera access
-    private func checkAuthorization() async -> Bool {
-        switch AVCaptureDevice.authorizationStatus(for: .video) {
-        case .authorized:
-            print("camera access: authorized")
-            return true
-        case .notDetermined:
-            print("camera access: not determined")
-            sessionQueue.suspend()
-            let status = await AVCaptureDevice.requestAccess(for: .video)
-            sessionQueue.resume()
-            return status
-        case .denied:
-            print("camera access: denied")
-            return false
-        case .restricted:
-            print("camera access: restricted")
-            return false
-        default:
-            return false
+    private func checkAuthorization() async -> ADayPermissionStatus {
+        // check camera access
+        let cameraStatus = AVCaptureDevice.authorizationStatus(for: .video)
+        if cameraStatus == .denied || cameraStatus == .restricted {
+            return .cameraDenied
         }
+        if cameraStatus == .notDetermined {
+            sessionQueue.suspend()
+            let granted = await AVCaptureDevice.requestAccess(for: .video)
+            sessionQueue.resume()
+            if !granted { return .cameraDenied }
+        }
+        
+        // check audio access
+        let audioStatus = AVCaptureDevice.authorizationStatus(for: .audio)
+        if audioStatus == .denied || audioStatus == .restricted {
+            return .microphoneDenied
+        }
+        if audioStatus == .notDetermined {
+            sessionQueue.suspend()
+            let granted = await AVCaptureDevice.requestAccess(for: .audio)
+            sessionQueue.resume()
+            if !granted { return .microphoneDenied }
+        }
+        
+        return .authorized
     }
 }
 
