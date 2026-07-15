@@ -32,7 +32,7 @@ class CameraViewModel: ObservableObject {
     @Published var isCameraInterrupted = false
     @Published var cameraInterruptionMessage: String? = nil
     @Published var showInterruptionAlert = false
-    
+
     private var cancellables = Set<AnyCancellable>()
     
     init() {
