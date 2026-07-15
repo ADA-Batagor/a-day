@@ -143,6 +143,7 @@ class CameraManager: NSObject, ObservableObject, @unchecked Sendable {
     @Published var isRecordingMovie = false
 
     private var cancellables = Set<AnyCancellable>()
+    
     private var addToPreviewStream: ((CIImage) -> Void)?
     lazy var previewStream: AsyncStream<CIImage> = {
         AsyncStream { continuation in
@@ -274,7 +275,11 @@ class CameraManager: NSObject, ObservableObject, @unchecked Sendable {
     // MARK: - Interruptions
 
     private func observeInterruptions() {
-        NotificationCenter.default.publisher(for: .AVCaptureSessionWasInterrupted, object: captureSession)
+        NotificationCenter.default
+            .publisher(
+                for: AVCaptureSession.wasInterruptedNotification,
+                object: captureSession
+            )
             .sink { [weak self] notification in
                 guard let self else { return }
                 DispatchQueue.main.async {
@@ -302,13 +307,19 @@ class CameraManager: NSObject, ObservableObject, @unchecked Sendable {
                     DispatchQueue.main.async {
                         self.interruptionMessage = "Camera unavailable"
                     }
+                case .sensitiveContentMitigationActivated:
+                    self.interruptionMessage = "Camera unavailable due to sensitive content restrictions"
                 @unknown default:
                     break
                 }
             }
             .store(in: &cancellables)
 
-        NotificationCenter.default.publisher(for: .AVCaptureSessionInterruptionEnded, object: captureSession)
+        NotificationCenter.default
+            .publisher(
+                for: AVCaptureSession.interruptionEndedNotification,
+                object: captureSession
+            )
             .sink { [weak self] _ in
                 DispatchQueue.main.async {
                     self?.isInterrupted = false
