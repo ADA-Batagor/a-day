@@ -143,7 +143,7 @@ class CameraManager: NSObject, ObservableObject, @unchecked Sendable {
     @Published var isRecordingMovie = false
 
     private var cancellables = Set<AnyCancellable>()
-
+    
     private var addToPreviewStream: ((CIImage) -> Void)?
     lazy var previewStream: AsyncStream<CIImage> = {
         AsyncStream { continuation in
@@ -275,15 +275,11 @@ class CameraManager: NSObject, ObservableObject, @unchecked Sendable {
     // MARK: - Interruptions
 
     private func observeInterruptions() {
-<<<<<<< HEAD
         NotificationCenter.default
             .publisher(
                 for: AVCaptureSession.wasInterruptedNotification,
                 object: captureSession
             )
-=======
-        NotificationCenter.default.publisher(for: .AVCaptureSessionWasInterrupted, object: captureSession)
->>>>>>> fb3032a (WIP: add notification and interruption handling to CameraManager)
             .sink { [weak self] notification in
                 guard let self else { return }
                 DispatchQueue.main.async {
@@ -311,7 +307,6 @@ class CameraManager: NSObject, ObservableObject, @unchecked Sendable {
                     DispatchQueue.main.async {
                         self.interruptionMessage = "Camera unavailable"
                     }
-<<<<<<< HEAD
                 case .sensitiveContentMitigationActivated:
                     DispatchQueue.main.async {
                         self.interruptionMessage = "Camera unavailable due to sensitive content restrictions"
@@ -320,60 +315,41 @@ class CameraManager: NSObject, ObservableObject, @unchecked Sendable {
                     DispatchQueue.main.async {
                         self.interruptionMessage = "Camera session was interrupted"
                     }
-=======
-                @unknown default:
-                    break
->>>>>>> fb3032a (WIP: add notification and interruption handling to CameraManager)
                 }
             }
             .store(in: &cancellables)
 
-<<<<<<< HEAD
         NotificationCenter.default
             .publisher(
                 for: AVCaptureSession.interruptionEndedNotification,
                 object: captureSession
             )
-=======
-        NotificationCenter.default.publisher(for: .AVCaptureSessionInterruptionEnded, object: captureSession)
->>>>>>> fb3032a (WIP: add notification and interruption handling to CameraManager)
             .sink { [weak self] _ in
                 DispatchQueue.main.async {
                     self?.isInterrupted = false
                     self?.interruptionMessage = nil
                 }
-<<<<<<< HEAD
                 self?.sessionQueue.async {
                     if self?.captureSession.isRunning == false {
                         self?.captureSession.startRunning()
                     }
                 }
-=======
->>>>>>> fb3032a (WIP: add notification and interruption handling to CameraManager)
             }
             .store(in: &cancellables)
     }
 
     //    start record video
-<<<<<<< HEAD
     @discardableResult
     func startRecordingVideo() async -> ADayPermissionStatus {
         // Request mic permission only when the user explicitly starts recording
         let micStatus = await checkMicrophoneAuthorization()
         guard micStatus == .authorized else { return micStatus }
 
-=======
-    func startRecordingVideo() {
->>>>>>> fb3032a (WIP: add notification and interruption handling to CameraManager)
         guard !isInterrupted else {
             DispatchQueue.main.async {
                 self.interruptionMessage = "Can't record while camera is in use by another app"
             }
-<<<<<<< HEAD
             return .authorized
-=======
-            return
->>>>>>> fb3032a (WIP: add notification and interruption handling to CameraManager)
         }
 
         let movieFileOutput = AVCaptureMovieFileOutput()
@@ -651,7 +627,6 @@ extension CameraManager: AVCaptureFileOutputRecordingDelegate {
         DispatchQueue.main.async {
             self.isRecordingMovie = false
         }
-<<<<<<< HEAD
         self.sessionQueue.async {
             if let currentOutput = self.movieFileOutput {
                 self.captureSession.removeOutput(currentOutput)
@@ -690,12 +665,6 @@ extension CameraManager: AVCaptureFileOutputRecordingDelegate {
         if recordingSuccess {
             addToMovieFileStream?(outputFileURL)
         }
-=======
-        if let error = error {
-            print("file output error: \(error.localizedDescription)")
-        }
-        addToMovieFileStream?(outputFileURL)
->>>>>>> fb3032a (WIP: add notification and interruption handling to CameraManager)
     }
 }
 
