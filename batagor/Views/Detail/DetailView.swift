@@ -44,7 +44,7 @@ struct DetailView: View {
     
     var body: some View {
         GeometryReader { geo in
-            ZStack(alignment: .center) {
+            ZStack(alignment: .top) {
                 LinearGradient(
                     stops: [
                         Gradient.Stop(color: Color.rgb(red: 250, green: 244, blue: 230), location: 0.0),
@@ -216,18 +216,21 @@ struct DetailView: View {
                     height * 0.98
                 }
                 .padding(.horizontal, 35)
-                
+                .offset(y: geo.size.height * 0.07)
+
                 if !isShowedDetail {
-                    Knob()
-                        .offset(y: geo.size.height * 0.9)
-                    
-                    CircularScrollView(
-                        storages: storages,
-                        selectedStorage: $selectedStorage,
-                        selectedThumbnail: $selectedThumbnail,
-                        selectedVideo: $selectedVideo,
-                        geo: geo
-                    )
+                    ZStack {
+                        Knob()
+                            .offset(y: geo.size.height * 0.9)
+                        
+                        CircularScrollView(
+                            storages: storages,
+                            selectedStorage: $selectedStorage,
+                            selectedThumbnail: $selectedThumbnail,
+                            selectedVideo: $selectedVideo,
+                            geo: geo
+                        )
+                    }
                 }
             }
             .ignoresSafeArea(.container)
@@ -339,4 +342,5 @@ struct DetailView: View {
             thumbnailPath: URL(string: "https://example.com")!
         )
     ), showCover: .constant(true))
+    .environmentObject(TimerManager.shared)
 }
