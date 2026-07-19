@@ -181,6 +181,15 @@ class CameraViewModel: ObservableObject {
         
     }
     
+    func startRecordingVideo() {
+        Task {
+            let status = await camera.startRecordingVideo()
+            if status == .microphoneDenied {
+                showMicrophonePermissionAlert = true
+            }
+        }
+    }
+
     func resetInterruption() {
         camera.resetInterruption()
         camera.isPreviewPaused = false

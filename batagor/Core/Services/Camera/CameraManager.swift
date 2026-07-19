@@ -189,7 +189,7 @@ class CameraManager: NSObject, ObservableObject, @unchecked Sendable {
     
     //    start capture session
     func start() async -> ADayPermissionStatus {
-        let authorized = await checkAuthorization()
+        let authorized = await checkCameraAuthorization()
         guard authorized == .authorized else { return authorized }
         
         if isCaptureSessionConfigured {
@@ -339,12 +339,17 @@ class CameraManager: NSObject, ObservableObject, @unchecked Sendable {
     }
 
     //    start record video
-    func startRecordingVideo() {
+    @discardableResult
+    func startRecordingVideo() async -> ADayPermissionStatus {
+        // Request mic permission only when the user explicitly starts recording
+        let micStatus = await checkMicrophoneAuthorization()
+        guard micStatus == .authorized else { return micStatus }
+
         guard !isInterrupted else {
             DispatchQueue.main.async {
                 self.interruptionMessage = "Can't record while camera is in use by another app"
             }
-            return
+            return .authorized
         }
 
         let movieFileOutput = AVCaptureMovieFileOutput()
@@ -355,7 +360,7 @@ class CameraManager: NSObject, ObservableObject, @unchecked Sendable {
         
         guard let movieFileOutput = self.movieFileOutput else {
             print("cannot find movie file output")
-            return
+            return .authorized
         }
         
         applyTorch()
@@ -366,7 +371,7 @@ class CameraManager: NSObject, ObservableObject, @unchecked Sendable {
         
         guard let directoryPath = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: ModelContainerService.appGroupIdentifier) else {
             print("cannot access local file domain")
-            return
+            return .authorized
         }
         
         let filename = UUID().uuidString
@@ -376,6 +381,7 @@ class CameraManager: NSObject, ObservableObject, @unchecked Sendable {
             .appendingPathExtension("mp4")
         
         movieFileOutput.startRecording(to: filepath, recordingDelegate: self)
+        return .authorized
     }
     
     //    stop record video
@@ -557,9 +563,8 @@ class CameraManager: NSObject, ObservableObject, @unchecked Sendable {
         }
     }
     
-    //    check autorization for camera access
-    private func checkAuthorization() async -> ADayPermissionStatus {
-        // check camera access
+    //    check authorization for camera access only (mic is NOT requested here)
+    private func checkCameraAuthorization() async -> ADayPermissionStatus {
         let cameraStatus = AVCaptureDevice.authorizationStatus(for: .video)
         if cameraStatus == .denied || cameraStatus == .restricted {
             return .cameraDenied
@@ -570,8 +575,11 @@ class CameraManager: NSObject, ObservableObject, @unchecked Sendable {
             sessionQueue.resume()
             if !granted { return .cameraDenied }
         }
-        
-        // check audio access
+        return .authorized
+    }
+
+    //    check authorization for microphone — called only when video recording starts
+    private func checkMicrophoneAuthorization() async -> ADayPermissionStatus {
         let audioStatus = AVCaptureDevice.authorizationStatus(for: .audio)
         if audioStatus == .denied || audioStatus == .restricted {
             return .microphoneDenied
@@ -582,7 +590,6 @@ class CameraManager: NSObject, ObservableObject, @unchecked Sendable {
             sessionQueue.resume()
             if !granted { return .microphoneDenied }
         }
-        
         return .authorized
     }
 

@@ -104,7 +104,7 @@ struct CameraToolbar: View {
                         }
                         
                         HapticManager.shared.impact(.light)
-                        cameraViewModel.camera.startRecordingVideo()
+                        cameraViewModel.startRecordingVideo()
                     } onPressingChanged: { pressing in
                         if pressing {
                             guard !cameraViewModel.isCameraInterrupted else { return }
