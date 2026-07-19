@@ -28,6 +28,7 @@ class CameraViewModel: ObservableObject {
     @Published var movieFileURL: URL?
     @Published var showCameraPermissionAlert = false
     @Published var showMicrophonePermissionAlert = false
+    @Published var recordingDenied = false
     @Published var isCameraInterrupted = false
     @Published var cameraInterruptionMessage: String? = nil
     @Published var showInterruptionAlert = false
@@ -182,10 +183,12 @@ class CameraViewModel: ObservableObject {
     }
     
     func startRecordingVideo() {
+        recordingDenied = false
         Task {
             let status = await camera.startRecordingVideo()
             if status == .microphoneDenied {
                 showMicrophonePermissionAlert = true
+                recordingDenied = true
             }
         }
     }

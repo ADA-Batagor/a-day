@@ -168,6 +168,15 @@ struct CameraToolbar: View {
                 rotation = newValue
             }
         }
+        .onChange(of: cameraViewModel.recordingDenied) { _, denied in
+            if denied {
+                withAnimation(.easeInOut(duration: 0.15)) {
+                    isPressed = false
+                    isRecording = false
+                    currentDuration = 0
+                }
+            }
+        }
         .fullScreenCover(isPresented: $showCover) {
             DetailView(selectedStorage: $selectedStorage, showCover: $showCover, previousPage: .camera)
         }
