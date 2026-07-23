@@ -512,7 +512,6 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				OTHER_DOCC_FLAGS = "--minimum-access-level internal";
 				PRODUCT_BUNDLE_IDENTIFIER = com.tudemaha.lawar;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -559,7 +558,6 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				OTHER_DOCC_FLAGS = "--minimum-access-level internal";
 				PRODUCT_BUNDLE_IDENTIFIER = com.tudemaha.lawar;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
