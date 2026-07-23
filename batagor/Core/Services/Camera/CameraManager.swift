@@ -13,6 +13,11 @@ enum ADayPermissionStatus {
     case authorized, cameraDenied, microphoneDenied
 }
 
+/// Thin `AVFoundation` wrapper around a single `AVCaptureSession`.
+///
+/// Capture events are exposed as `AsyncStream`s instead of delegate callbacks so
+/// ``CameraViewModel`` can consume them with `for await`. See <doc:CameraPipeline>
+/// for the full preview/photo/movie flow and how rotation and device switching work.
 class CameraManager: NSObject, ObservableObject, @unchecked Sendable {
     //    create a new capture session from AVFoundation
     private let captureSession = AVCaptureSession()
@@ -115,6 +120,7 @@ class CameraManager: NSObject, ObservableObject, @unchecked Sendable {
     
     // capture photo
     private var addToPhotoStream: ((AVCapturePhoto) -> Void)?
+    /// Yields one `AVCapturePhoto` per completed ``takePhoto()`` call.
     lazy var photoStream: AsyncStream<AVCapturePhoto> = {
         AsyncStream { continuation in
             addToPhotoStream = { photo in
@@ -125,6 +131,7 @@ class CameraManager: NSObject, ObservableObject, @unchecked Sendable {
     
     //    record movie
     private var addToMovieFileStream: ((URL) -> Void)?
+    /// Yields the finished movie file URL after ``stopRecordingVideo()``.
     lazy var movieFileStream: AsyncStream<URL> = {
         AsyncStream { continuation in
             addToMovieFileStream = { fileURL in
@@ -145,6 +152,7 @@ class CameraManager: NSObject, ObservableObject, @unchecked Sendable {
     private var cancellables = Set<AnyCancellable>()
     
     private var addToPreviewStream: ((CIImage) -> Void)?
+    /// Yields live viewfinder frames while the capture session is running.
     lazy var previewStream: AsyncStream<CIImage> = {
         AsyncStream { continuation in
             addToPreviewStream = { ciImage in
@@ -187,7 +195,8 @@ class CameraManager: NSObject, ObservableObject, @unchecked Sendable {
         observeInterruptions()
     }
     
-    //    start capture session
+    /// Requests camera authorization if needed, then configures (once) and starts
+    /// the capture session. Safe to call repeatedly — a no-op if already running.
     func start() async -> ADayPermissionStatus {
         let authorized = await checkCameraAuthorization()
         guard authorized == .authorized else { return authorized }
@@ -211,7 +220,7 @@ class CameraManager: NSObject, ObservableObject, @unchecked Sendable {
         return .authorized
     }
     
-    //    stop capture session
+    /// Stops the running capture session, if any.
     func stop() {
         guard isCaptureSessionConfigured else { return }
         if captureSession.isRunning {
@@ -221,7 +230,7 @@ class CameraManager: NSObject, ObservableObject, @unchecked Sendable {
         }
     }
     
-    //    switch cameras
+    /// Cycles to the next available capture device (e.g. back → front camera).
     func switchCaptureDevices() {
         if let selectedCaptureDevice = selectedCaptureDevice, let index = availableCaptureDevices.firstIndex(of: selectedCaptureDevice) {
             let nextIndex = (index + 1) % availableCaptureDevices.count
@@ -231,7 +240,7 @@ class CameraManager: NSObject, ObservableObject, @unchecked Sendable {
         }
     }
     
-    // zoom camera
+    /// Sets the video zoom factor, clamped to the selected device's supported range.
     func setZoom(_ factor: CGFloat) {
         guard let device = selectedCaptureDevice else { return }
         
@@ -245,6 +254,7 @@ class CameraManager: NSObject, ObservableObject, @unchecked Sendable {
         }
     }
     
+    /// Sets focus and exposure point of interest, if the device supports it.
     func setFocus(at point: CGPoint) {
         guard let device =  selectedCaptureDevice else { return }
         
@@ -271,7 +281,7 @@ class CameraManager: NSObject, ObservableObject, @unchecked Sendable {
     func cycleFlash() {
         flashMode.next()
     }
-    
+
     // MARK: - Interruptions
 
     private func observeInterruptions() {
@@ -338,7 +348,9 @@ class CameraManager: NSObject, ObservableObject, @unchecked Sendable {
             .store(in: &cancellables)
     }
 
-    //    start record video
+    /// Requests microphone authorization if needed, then starts writing video to a
+    /// new file inside the App Group container. The finished URL is delivered later
+    /// via ``movieFileStream``.
     @discardableResult
     func startRecordingVideo() async -> ADayPermissionStatus {
         // Request mic permission only when the user explicitly starts recording
@@ -357,7 +369,7 @@ class CameraManager: NSObject, ObservableObject, @unchecked Sendable {
             captureSession.addOutput(movieFileOutput)
             self.movieFileOutput = movieFileOutput
         }
-        
+
         guard let movieFileOutput = self.movieFileOutput else {
             print("cannot find movie file output")
             return .authorized
@@ -384,7 +396,7 @@ class CameraManager: NSObject, ObservableObject, @unchecked Sendable {
         return .authorized
     }
     
-    //    stop record video
+    /// Stops the in-progress video recording, if any.
     func stopRecordingVideo() {
         guard let movieFileOutput = self.movieFileOutput else {
             print("cannot find movie file output")
@@ -417,7 +429,7 @@ class CameraManager: NSObject, ObservableObject, @unchecked Sendable {
         }
     }
     
-    //    take photo
+    /// Captures a single photo. The result is delivered later via ``photoStream``.
     func takePhoto() {
         guard let photoOutput = self.photoOutput else {
             print("cannot find photo output")

@@ -10,10 +10,18 @@ import SwiftData
 import BackgroundTasks
 import WidgetKit
 
+/// Removes expired ``Storage`` records and their backing files.
+///
+/// Invoked either from a scheduled `BGAppRefreshTaskRequest` (``performCleanup(modelContext:)``,
+/// via ``scheduleBackgroundCleanup()``) or directly from user-initiated deletes
+/// (``manualDelete(modelContext:storage:)``). Both paths delete files before rows
+/// and reload widget timelines afterward. See <doc:StorageAndDeletion>.
 class DeletionService {
     static let shared = DeletionService()
     static let backgroundTaskIdentifier = Bundle.main.object(forInfoDictionaryKey: "MainAppBundleIdentifier") as! String
-    
+
+    /// Deletes every ``Storage`` row whose `expiredAt` has passed, along with its
+    /// main and thumbnail files, then reloads widget timelines.
     @MainActor
     func performCleanup(modelContext: ModelContext) async {
         let descriptor = FetchDescriptor<Storage>()
@@ -43,6 +51,8 @@ class DeletionService {
         WidgetCenter.shared.reloadAllTimelines()
     }
     
+    /// Deletes a single ``Storage`` row and its files immediately (user-initiated
+    /// delete), then reloads widget timelines.
     func manualDelete(modelContext: ModelContext, storage: Storage) {
         StorageManager.shared.deleteFile(fileURL: storage.mainPath)
         StorageManager.shared.deleteFile(fileURL: storage.thumbnailPath)
@@ -53,6 +63,8 @@ class DeletionService {
         WidgetCenter.shared.reloadAllTimelines()
     }
     
+    /// Submits a `BGAppRefreshTaskRequest` so the system runs ``performCleanup(modelContext:)``
+    /// opportunistically in the background.
     func scheduleBackgroundCleanup() {
         let request = BGAppRefreshTaskRequest(identifier: Self.backgroundTaskIdentifier)
         request.earliestBeginDate = Date(timeIntervalSinceNow: 15 )
