@@ -26,6 +26,24 @@ Example: `fix/deletion-background-interval`
 - [ ] No debug code or leftover `print` statements
 - [ ] Both `batagor` and `widget` targets build without warnings if widget-related code was touched
 - [ ] `WidgetCenter.shared.reloadAllTimelines()` called if media data was modified
+- [ ] Docs updated if architecture/module structure changed (see Documentation below)
+
+## Documentation
+
+Technical documentation lives in `batagor/Documentation.docc` (built via
+`Product ▸ Build Documentation` in Xcode, or the `docs.yml` workflow on push to
+`main`). Project structure and naming conventions stay in this repo's `README.md` —
+the DocC catalog covers architecture and behavior instead.
+
+- **New `Service`/`Manager`/`ViewModel`**: add a `///` summary doc comment on the
+  type (and its non-trivial public methods). Trivial SwiftUI view structs don't need
+  this — they're self-explanatory.
+- **Architecture-affecting change** (new subsystem, changed data flow between
+  existing ones): update the relevant article under `Documentation.docc` in the same
+  PR — don't let it drift to a follow-up.
+- **Tutorials** (`Documentation.docc/Tutorials`) are a periodically-refreshed
+  onboarding aid, not living reference docs — they don't need to track every change,
+  just stay roughly accurate.
 
 ## Labels
 
