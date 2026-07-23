@@ -11,6 +11,11 @@ import SwiftData
 import WidgetKit
 import CoreLocation
 
+/// Drives `CameraView`: owns a ``CameraManager`` plus the location/geocoding
+/// services, and translates their async streams into `@Published` UI state.
+///
+/// See <doc:CameraPipeline> for the full preview/photo/movie capture flow and
+/// <doc:LocationAndGeocoding> for how saves get tagged with a place name.
 @MainActor
 class CameraViewModel: ObservableObject {
     let PHOTO_EXPIRY_TIME = 24 * 60 * 60
@@ -75,6 +80,9 @@ class CameraViewModel: ObservableObject {
         }
     }
     
+    /// Persists ``photoTaken`` as a new ``Storage`` row: writes the photo + thumbnail
+    /// via `StorageManager`, tags it with the current location/place name, saves
+    /// the model context, and reloads widget timelines.
     func handleSavePhoto(context: ModelContext) async {
         if let image = photoTaken {
             let photo = UIImage(data: image.imageData)!
@@ -105,6 +113,9 @@ class CameraViewModel: ObservableObject {
         photoTaken = nil
     }
     
+    /// Persists ``movieFileURL`` as a new ``Storage`` row: embeds location metadata
+    /// into the movie file, generates a thumbnail, tags it with a place name, saves
+    /// the model context, and reloads widget timelines.
     func handleSaveMovie(context: ModelContext) async {
         if let movieURL = movieFileURL {
             locationManager.addLocationToVideo(at: movieURL, location: locationManager.currentLocation)

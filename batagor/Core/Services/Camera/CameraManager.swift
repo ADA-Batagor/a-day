@@ -8,6 +8,11 @@
 import UIKit
 import AVFoundation
 
+/// Thin `AVFoundation` wrapper around a single `AVCaptureSession`.
+///
+/// Capture events are exposed as `AsyncStream`s instead of delegate callbacks so
+/// ``CameraViewModel`` can consume them with `for await`. See <doc:CameraPipeline>
+/// for the full preview/photo/movie flow and how rotation and device switching work.
 class CameraManager: NSObject, @unchecked Sendable {
     //    create a new capture session from AVFoundation
     private let captureSession = AVCaptureSession()
@@ -107,6 +112,7 @@ class CameraManager: NSObject, @unchecked Sendable {
     
     // capture photo
     private var addToPhotoStream: ((AVCapturePhoto) -> Void)?
+    /// Yields one `AVCapturePhoto` per completed ``takePhoto()`` call.
     lazy var photoStream: AsyncStream<AVCapturePhoto> = {
         AsyncStream { continuation in
             addToPhotoStream = { photo in
@@ -117,6 +123,7 @@ class CameraManager: NSObject, @unchecked Sendable {
     
     //    record movie
     private var addToMovieFileStream: ((URL) -> Void)?
+    /// Yields the finished movie file URL after ``stopRecordingVideo()``.
     lazy var movieFileStream: AsyncStream<URL> = {
         AsyncStream { continuation in
             addToMovieFileStream = { fileURL in
@@ -128,6 +135,7 @@ class CameraManager: NSObject, @unchecked Sendable {
     //    preview output
     var isPreviewPaused = false
     private var addToPreviewStream: ((CIImage) -> Void)?
+    /// Yields live viewfinder frames while the capture session is running.
     lazy var previewStream: AsyncStream<CIImage> = {
         AsyncStream { continuation in
             addToPreviewStream = { ciImage in
@@ -169,7 +177,8 @@ class CameraManager: NSObject, @unchecked Sendable {
         selectedAudioDevice = availableAudioDevices.first ?? AVCaptureDevice.default(for: .audio)
     }
     
-    //    start capture session
+    /// Requests camera authorization if needed, then configures (once) and starts
+    /// the capture session. Safe to call repeatedly — a no-op if already running.
     func start() async {
         let authorized = await checkAuthorization()
         guard authorized else { return }
@@ -191,7 +200,7 @@ class CameraManager: NSObject, @unchecked Sendable {
         }
     }
     
-    //    stop capture session
+    /// Stops the running capture session, if any.
     func stop() {
         guard isCaptureSessionConfigured else { return }
         if captureSession.isRunning {
@@ -201,7 +210,7 @@ class CameraManager: NSObject, @unchecked Sendable {
         }
     }
     
-    //    switch cameras
+    /// Cycles to the next available capture device (e.g. back → front camera).
     func switchCaptureDevices() {
         if let selectedCaptureDevice = selectedCaptureDevice, let index = availableCaptureDevices.firstIndex(of: selectedCaptureDevice) {
             let nextIndex = (index + 1) % availableCaptureDevices.count
@@ -211,7 +220,7 @@ class CameraManager: NSObject, @unchecked Sendable {
         }
     }
     
-    // zoom camera
+    /// Sets the video zoom factor, clamped to the selected device's supported range.
     func setZoom(_ factor: CGFloat) {
         guard let device = selectedCaptureDevice else { return }
         
@@ -225,6 +234,7 @@ class CameraManager: NSObject, @unchecked Sendable {
         }
     }
     
+    /// Sets focus and exposure point of interest, if the device supports it.
     func setFocus(at point: CGPoint) {
         guard let device =  selectedCaptureDevice else { return }
         
@@ -247,7 +257,8 @@ class CameraManager: NSObject, @unchecked Sendable {
         }
     }
     
-    //    start record video
+    /// Starts writing video to a new file inside the App Group container.
+    /// The finished URL is delivered later via ``movieFileStream``.
     func startRecordingVideo() {
         guard let movieFileOutput = self.movieFileOutput else {
             print("cannot find movie file output")
@@ -272,7 +283,7 @@ class CameraManager: NSObject, @unchecked Sendable {
         movieFileOutput.startRecording(to: filepath, recordingDelegate: self)
     }
     
-    //    stop record video
+    /// Stops the in-progress video recording, if any.
     func stopRecordingVideo() {
         guard let movieFileOutput = self.movieFileOutput else {
             print("cannot find movie file output")
@@ -282,7 +293,7 @@ class CameraManager: NSObject, @unchecked Sendable {
         movieFileOutput.stopRecording()
     }
     
-    //    take photo
+    /// Captures a single photo. The result is delivered later via ``photoStream``.
     func takePhoto() {
         guard let photoOutput = self.photoOutput else {
             print("cannot find photo output")
