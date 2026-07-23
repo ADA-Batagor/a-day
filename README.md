@@ -8,6 +8,10 @@
   <strong>Temporary storage for photos and videos. Prevent digital clutter from filling up your device!</strong>
 </p>
 
+<p align="center">
+  📖 <a href="https://ada-batagor.github.io/a-day/documentation/batagor/">Technical documentation</a> (architecture, subsystems, symbol reference, tutorial) — also buildable locally via <code>Product ▸ Build Documentation</code> in Xcode.
+</p>
+
 ---
 
 ## 📋 Project Information
