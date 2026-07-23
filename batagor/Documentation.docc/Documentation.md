@@ -27,3 +27,7 @@ together and why. For project setup, folder structure, and naming conventions, s
 - <doc:StorageAndDeletion>
 - <doc:WidgetIntegration>
 - <doc:LocationAndGeocoding>
+
+### Tutorials
+
+- <doc:Tutorials/BatagorTutorials>

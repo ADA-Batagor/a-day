@@ -1,0 +1,104 @@
+@Tutorial(time: 15) {
+    @Intro(title: "Set Up and Make Your First Change") {
+        Clone the project, get it running on a device, and ship one small, real
+        change to the gallery UI — the fastest way to confirm your environment
+        works end to end before picking up a real issue.
+    }
+
+    @Section(title: "Clone and open the project") {
+        @ContentAndMedia {
+            Get the repository onto your machine and open it in Xcode 15+.
+        }
+
+        @Steps {
+            @Step {
+                Clone the repository and open `batagor.xcodeproj`.
+
+                @Code(file: "GettingStarted-01-01.sh", name: "Terminal") { }
+            }
+
+            @Step {
+                Select the **batagor** scheme and pick a simulator, or a connected
+                iOS 18+ device, as the run destination.
+            }
+        }
+    }
+
+    @Section(title: "Configure signing and App Groups") {
+        @ContentAndMedia {
+            The app and widget share media through an App Group, so both targets
+            need a valid signing team before they'll run on a physical device — the
+            simulator works without this step.
+        }
+
+        @Steps {
+            @Step {
+                Select the root **batagor** project in the Navigator, choose the
+                **batagor** target, and open **Signing & Capabilities**.
+            }
+
+            @Step {
+                Pick your own **Team** to resolve the provisioning profile error,
+                and confirm the **App Groups** entry matches the
+                `GroupAppBundleIdentifier` value in `Info.plist`.
+            }
+
+            @Step {
+                Repeat the same signing steps for the **widgetExtension** target —
+                it reads the same shared App Group container, so it needs the same
+                team.
+            }
+        }
+    }
+
+    @Section(title: "Run the app") {
+        @ContentAndMedia {
+            Build and run, then confirm the whole capture → save → widget loop
+            works before touching any code.
+        }
+
+        @Steps {
+            @Step {
+                Build and run (⌘R). Grant camera, microphone, and location
+                permissions when prompted.
+            }
+
+            @Step {
+                Take a photo, confirm it shows up in the gallery, then add the
+                **Capture Snaps** widget to your Home Screen and confirm its count
+                updates.
+            }
+        }
+    }
+
+    @Section(title: "Make a small, real change") {
+        @ContentAndMedia {
+            ``GalleryCount`` (`Views/Shared/GalleryCount.swift`) renders the
+            "x / 24 Snaps" label under the gallery grid — small enough to safely
+            practice a first edit on.
+        }
+
+        @Steps {
+            @Step {
+                Open `Views/Shared/GalleryCount.swift` and find the `Text` view
+                that builds the count label.
+
+                @Code(file: "GettingStarted-04-01.swift", name: "GalleryCount.swift") { }
+            }
+
+            @Step {
+                Change the trailing word from "Snaps" to "Moments" and re-run. The
+                gallery header should now read "x / 24 Moments".
+
+                @Code(file: "GettingStarted-04-02.swift", name: "GalleryCount.swift") { }
+            }
+
+            @Step {
+                You've now touched the build, the signing setup, the running app,
+                and the source — you're ready to pick up a real BAT- issue. See
+                <doc:Architecture> for how this one small view fits into the rest
+                of the app.
+            }
+        }
+    }
+}
