@@ -62,3 +62,6 @@ fastlane/screenshots/**/*.png
 fastlane/test_output
 
 .DS_Store
+
+# Personal bundle-id override (scripts/local-bundle-id.sh) — never shared
+.local-bundle-id
