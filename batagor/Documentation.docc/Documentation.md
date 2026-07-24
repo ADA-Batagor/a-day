@@ -20,6 +20,7 @@ together and why. For project setup, folder structure, and naming conventions, s
 ### Essentials
 
 - <doc:Architecture>
+- <doc:AppLifecycle>
 
 ### Subsystems
 

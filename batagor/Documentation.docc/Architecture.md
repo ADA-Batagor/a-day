@@ -49,4 +49,5 @@ the `CameraView` observes.
   timeline picks it up.
 
 See <doc:CameraPipeline>, <doc:StorageAndDeletion>, <doc:WidgetIntegration>, and
-<doc:LocationAndGeocoding> for how each subsystem actually works.
+<doc:LocationAndGeocoding> for how each subsystem actually works, and
+<doc:AppLifecycle> for where it all gets wired together at startup.

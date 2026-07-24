@@ -29,15 +29,21 @@ hours from `createdAt` unless a custom `expiredAt` interval is passed in.
 
 ## When deletion actually runs
 
-`DeletionService` doesn't run on a fixed timer — it's invoked from two places:
+`DeletionService` doesn't run on a fixed timer — it's invoked from three places:
 
-- **Background**: `scheduleBackgroundCleanup()` submits a `BGAppRefreshTaskRequest`
-  (`BackgroundTasks` framework) that the system runs opportunistically; the app's
-  `BGTaskScheduler` handler calls `performCleanup(modelContext:)`.
+- **On launch/foreground**: `batagorApp`'s root view runs `performCleanup(modelContext:)`
+  from `.onAppear`, so expired items are swept the moment the app becomes active —
+  the most common path in practice, since most sessions start with the app opening.
+- **Background**: `.backgroundTask(.appRefresh(DeletionService.backgroundTaskIdentifier))`
+  in `batagorApp` is what actually registers the handler with the system; inside it,
+  `performCleanup(modelContext:)` runs and then re-arms itself via
+  `scheduleBackgroundCleanup()`, which submits a `BGAppRefreshTaskRequest`
+  (`BackgroundTasks` framework) for the system to run opportunistically later. See
+  <doc:AppLifecycle>.
 - **Manual**: `manualDelete(modelContext:storage:)` is called directly when a user
   deletes an item from the gallery/detail view.
 
-Both paths funnel through the same file-then-record deletion order and the same
+All three paths funnel through the same file-then-record deletion order and the same
 `WidgetCenter` reload, so there's a single source of truth for "how a `Storage` row
 disappears."
 
