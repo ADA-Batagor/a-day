@@ -1,20 +1,8 @@
 {
   "theme": {
     "color": {
-      "documentation-intro-fill": {
-        "light": "#FAF4E6",
-        "dark": "#1C1C1C"
-      },
-      "documentation-intro-accent": {
-        "light": "#A7CBFF",
-        "dark": "#A7CBFF"
-      },
       "link": {
         "light": "#1C1C1C",
-        "dark": "#FAF4E6"
-      },
-      "button-background": {
-        "light": "#A7CBFF",
         "dark": "#A7CBFF"
       }
     }
