@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 
+/// The two top-level destinations ``NavigationManager`` can switch between.
 enum AppDestination: Hashable {
     case camera
     case gallery
