@@ -27,8 +27,11 @@
     @Section(title: "Configure signing and App Groups") {
         @ContentAndMedia {
             The app and widget share media through an App Group, so both targets
-            need a valid signing team before they'll run on a physical device — the
-            simulator works without this step.
+            need a valid signing team **and** matching bundle/group identifiers
+            before they'll run on a physical device — the simulator works without
+            this step. Picking a Team alone isn't enough: `MainAppBundleIdentifier`
+            and `GroupAppBundleIdentifier` in `Info.plist` are plain strings the
+            code reads at runtime — Xcode doesn't rewrite them for you.
         }
 
         @Steps {
@@ -38,15 +41,35 @@
             }
 
             @Step {
-                Pick your own **Team** to resolve the provisioning profile error,
-                and confirm the **App Groups** entry matches the
-                `GroupAppBundleIdentifier` value in `Info.plist`.
+                Pick your own **Team** to resolve the provisioning profile error.
+                Xcode will likely also flag the bundle identifier
+                (`com.tudemaha.lawar`) as taken — change it to something unique
+                under your own account here too.
             }
 
             @Step {
-                Repeat the same signing steps for the **widgetExtension** target —
-                it reads the same shared App Group container, so it needs the same
-                team.
+                Open `batagor/Info.plist` and update **both**
+                `MainAppBundleIdentifier` and `GroupAppBundleIdentifier` to match —
+                e.g. `com.<you>.batagor` and `group.com.<you>.batagor`. These are
+                custom keys read via `Bundle.main.object(forInfoDictionaryKey:)`
+                (see `ModelContainerService`, `CameraManager`, `DeletionService`),
+                not tied to the bundle identifier picker above.
+            }
+
+            @Step {
+                Back in **Signing & Capabilities ▸ App Groups**, add/select the
+                same group you just wrote into `GroupAppBundleIdentifier` — the
+                capability entry and the plist string must match exactly.
+            }
+
+            @Step {
+                Repeat all of the above for the **widgetExtension** target: same
+                Team, same bundle identifier suffix, and edit
+                `widget/Info.plist`'s `MainAppBundleIdentifier` /
+                `GroupAppBundleIdentifier` to the **exact same values** you used
+                for `batagor/Info.plist`. A mismatch here is the most common
+                reason `ModelContainerService` fails with "Shared app group
+                container not found" on a physical device.
             }
         }
     }
