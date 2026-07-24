@@ -48,13 +48,26 @@ Since A Day relies on App Groups to share database records and media assets betw
 1. Clone this repository to your local directory.
 2. Open `batagor.xcodeproj` using Xcode.
 
+### Step 2: Set Your Own Bundle Identifier
+
+The team-default bundle identifier (`com.tudemaha.lawar`) and its App Group are tied
+to one signing team, so you need your own before the App Group will work under your
+account:
+
+1. Run `./scripts/local-bundle-id.sh set <your-suffix>` from the repo root — this
+   rewrites the bundle identifier and App Group for both targets in one shot (see
+   `CONTRIBUTING.md` for details).
+2. Run `git config core.hooksPath .githooks` once so future `git pull`s
+   automatically keep your identifier instead of reverting to the team default.
+
 ### Step 3: Configure Signing & Capabilities (For Physical Devices)
 
 1. Select the root **batagor** project in the Xcode Project Navigator.
 2. Under **Targets**, select the **batagor** target.
 3. Navigate to the **Signing & Capabilities** tab.
 4. Select your **Team** to resolve provisioning profile errors.
-5. In the **App Groups** section, verify or a unique package name (if using a custom group, update the `GroupAppBundleIdentifier` value inside `Info.plist`).
+5. In the **App Groups** section, add/select the group the script wrote in Step 2
+   (`group.com.tudemaha.<your-suffix>`).
 6. Repeat the same signing configuration steps for the **widget** target.
 
 ### Step 4: Run the Application

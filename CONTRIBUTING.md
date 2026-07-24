@@ -1,5 +1,35 @@
 # Contributing to batagor
 
+## Local Development Setup
+
+The app and widget share media through an App Group, which is tied to a signing
+team — so to run on a physical device, everyone needs their **own** bundle
+identifier and App Group, not the team default (`com.tudemaha.lawar`) checked into
+`project.pbxproj`/`Info.plist`. Editing those by hand every time you pull gets old
+fast, so there's a script for it:
+
+```bash
+git config core.hooksPath .githooks   # one-time, lets pulls auto-reapply your ID
+./scripts/local-bundle-id.sh set <your-suffix>   # e.g. `set gorengan`
+```
+
+That rewrites `PRODUCT_BUNDLE_IDENTIFIER` and the `MainAppBundleIdentifier`/
+`GroupAppBundleIdentifier` plist keys in both targets to `com.tudemaha.<your-suffix>`
+/ `group.com.tudemaha.<your-suffix>`, and stores your suffix in `.local-bundle-id`
+(gitignored — never shared or committed). From then on, `.githooks/post-merge` and
+`.githooks/post-checkout` automatically re-apply it after every pull or branch
+switch, so the team-default identifiers never silently overwrite your local setup
+again.
+
+You still need to separately pick your own **Team** and matching **App Groups**
+capability entry in Xcode's Signing & Capabilities for both targets — the script
+only handles the string values, not the actual Xcode signing configuration. See the
+in-app tutorial (`Documentation.docc/Tutorials`) for the full walkthrough.
+
+Other commands: `./scripts/local-bundle-id.sh status` (see current/stored suffix),
+`./scripts/local-bundle-id.sh reset` (restore the team default — do this before
+committing if you're ever unsure your working tree has your personal ID in it).
+
 ## Branching Strategy
 
 We use **trunk-based development**. All work merges into `main` via short-lived feature branches. Branches should live for no more than a few days — if a branch is growing large, break it into smaller PRs.

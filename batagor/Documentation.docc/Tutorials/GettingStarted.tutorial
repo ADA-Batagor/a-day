@@ -29,47 +29,48 @@
             The app and widget share media through an App Group, so both targets
             need a valid signing team **and** matching bundle/group identifiers
             before they'll run on a physical device — the simulator works without
-            this step. Picking a Team alone isn't enough: `MainAppBundleIdentifier`
-            and `GroupAppBundleIdentifier` in `Info.plist` are plain strings the
-            code reads at runtime — Xcode doesn't rewrite them for you.
+            this step. `MainAppBundleIdentifier` and `GroupAppBundleIdentifier` in
+            `Info.plist` are plain strings the code reads at runtime, so picking a
+            Team in Xcode alone isn't enough — `scripts/local-bundle-id.sh`
+            automates rewriting them for both targets in one shot.
         }
 
         @Steps {
             @Step {
+                From the repo root, run the script with a suffix unique to you
+                (e.g. your own name) — this rewrites the bundle identifier and App
+                Group in both `Info.plist` files and `project.pbxproj` together.
+
+                @Code(file: "GettingStarted-02-01.sh", name: "Terminal") { }
+            }
+
+            @Step {
                 Select the root **batagor** project in the Navigator, choose the
-                **batagor** target, and open **Signing & Capabilities**.
+                **batagor** target, open **Signing & Capabilities**, and pick your
+                own **Team** — the bundle identifier is already unique from the
+                previous step, so this just resolves the provisioning profile.
             }
 
             @Step {
-                Pick your own **Team** to resolve the provisioning profile error.
-                Xcode will likely also flag the bundle identifier
-                (`com.tudemaha.lawar`) as taken — change it to something unique
-                under your own account here too.
-            }
-
-            @Step {
-                Open `batagor/Info.plist` and update **both**
-                `MainAppBundleIdentifier` and `GroupAppBundleIdentifier` to match —
-                e.g. `com.<you>.batagor` and `group.com.<you>.batagor`. These are
-                custom keys read via `Bundle.main.object(forInfoDictionaryKey:)`
-                (see `ModelContainerService`, `CameraManager`, `DeletionService`),
-                not tied to the bundle identifier picker above.
-            }
-
-            @Step {
-                Back in **Signing & Capabilities ▸ App Groups**, add/select the
-                same group you just wrote into `GroupAppBundleIdentifier` — the
+                In the same tab, under **App Groups**, add/select the group the
+                script just wrote (`group.com.tudemaha.<your suffix>`) — the
                 capability entry and the plist string must match exactly.
             }
 
             @Step {
-                Repeat all of the above for the **widgetExtension** target: same
-                Team, same bundle identifier suffix, and edit
-                `widget/Info.plist`'s `MainAppBundleIdentifier` /
-                `GroupAppBundleIdentifier` to the **exact same values** you used
-                for `batagor/Info.plist`. A mismatch here is the most common
-                reason `ModelContainerService` fails with "Shared app group
-                container not found" on a physical device.
+                Repeat the Team and App Groups steps for the **widgetExtension**
+                target — its `Info.plist` and bundle identifier were already
+                updated by the script, so only the Xcode signing UI is left. A
+                mismatch here is the most common reason `ModelContainerService`
+                fails with "Shared app group container not found" on a physical
+                device.
+            }
+
+            @Step {
+                Run `git config core.hooksPath .githooks` once so future
+                `git pull`s automatically re-apply your suffix instead of quietly
+                reverting to the team default. See `CONTRIBUTING.md` for the full
+                rundown of `local-bundle-id.sh`'s other commands.
             }
         }
     }
