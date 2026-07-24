@@ -40,11 +40,13 @@ jobs:
           "$(xcrun --find docc)" process-archive transform-for-static-hosting \
             "$archive" \
             --output-path site \
-            --hosting-base-path a-day \
-            --theme-settings-file batagor/Documentation.docc/theme-settings.json
+            --hosting-base-path a-day
 
-      - name: Redirect site root to the module page
+      - name: Add theme settings and redirect site root to the module page
         run: |
+          # docc-render fetches theme-settings.json at runtime from the site
+          # root — there's no build-time flag for it, just drop it in place.
+          cp batagor/Documentation.docc/theme-settings.json site/theme-settings.json
           echo '<meta http-equiv="refresh" content="0; url=./documentation/batagor/">' > site/index.html
 
       - uses: actions/upload-pages-artifact@v3

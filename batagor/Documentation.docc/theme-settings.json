@@ -7,15 +7,15 @@
       },
       "documentation-intro-accent": {
         "light": "#A7CBFF",
-        "dark": "#D5FFE0"
+        "dark": "#A7CBFF"
       },
       "link": {
         "light": "#1C1C1C",
-        "dark": "#D5FFE0"
+        "dark": "#FAF4E6"
       },
       "button-background": {
         "light": "#A7CBFF",
-        "dark": "#D5FFE0"
+        "dark": "#A7CBFF"
       }
     }
   }
