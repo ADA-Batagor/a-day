@@ -12,11 +12,11 @@ import SwiftData
 struct batagorApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
-    @StateObject private var sharedTaskManager = SharedTimerManager.shared
+    @StateObject private var sharedTaskManager = TimerManager.shared
     @StateObject private var navigationManager = NavigationManager.shared
     @StateObject private var shortcutManager = ShortcutManager.shared
     
-    private var sharedModelContainer = SharedModelContainer.shared
+    private var sharedModelContainer = ModelContainerService.shared
     
     var body: some Scene {
         WindowGroup {

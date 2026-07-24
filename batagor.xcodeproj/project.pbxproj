@@ -39,7 +39,6 @@
 
 /* Begin PBXFileReference section */
 		3F764C722EB09ED70028EDD1 /* widgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = widgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		3F764C892EB0A8970028EDD1 /* widgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = widgetExtension.entitlements; sourceTree = "<group>"; };
 		3F764C8E2EB0A96C0028EDD1 /* SwiftData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftData.framework; path = System/Library/Frameworks/SwiftData.framework; sourceTree = SDKROOT; };
 		3FDD00D72EAF506300E14B66 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		3FDD00D92EAF506300E14B66 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
@@ -57,20 +56,21 @@
 		3F764C8B2EB0A8DF0028EDD1 /* Exceptions for "batagor" folder in "widgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Core/Helpers/TimeFormatter.swift,
+				Core/Services/Storage/ModelContainerService.swift,
+				Core/Services/Storage/StorageManager.swift,
+				Core/Services/System/NavigationManager.swift,
 				"Extensions/Color+Ext.swift",
 				"Extensions/Font+Ext.swift",
-				"Font/SpaceGrotesk-Bold.ttf",
-				"Font/SpaceGrotesk-Light.ttf",
-				"Font/SpaceGrotesk-Medium.ttf",
-				"Font/SpaceGrotesk-Regular.ttf",
-				"Font/SpaceGrotesk-SemiBold.ttf",
-				Model/PlacemarkInfo.swift,
-				Model/Storage.swift,
-				Utils/NavigationManager.swift,
-				Utils/SharedModelContainer.swift,
-				Utils/StorageManager.swift,
-				Utils/TimeFormatter.swift,
-				View/Components/CircularProgress.swift,
+				Models/FlashCycle.swift,
+				Models/PlacemarkInfo.swift,
+				Models/Storage.swift,
+				"Resources/Fonts/SpaceGrotesk-Bold.ttf",
+				"Resources/Fonts/SpaceGrotesk-Light.ttf",
+				"Resources/Fonts/SpaceGrotesk-Medium.ttf",
+				"Resources/Fonts/SpaceGrotesk-Regular.ttf",
+				"Resources/Fonts/SpaceGrotesk-SemiBold.ttf",
+				Views/Shared/CircularProgress.swift,
 			);
 			target = 3F764C712EB09ED70028EDD1 /* widgetExtension */;
 		};
@@ -146,7 +146,6 @@
 		9E61FA002EA75DD200053854 = {
 			isa = PBXGroup;
 			children = (
-				3F764C892EB0A8970028EDD1 /* widgetExtension.entitlements */,
 				9E61FA0B2EA75DD200053854 /* batagor */,
 				3F764C752EB09ED70028EDD1 /* widget */,
 				3FDD00D62EAF506300E14B66 /* Frameworks */,
@@ -220,7 +219,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1620;
-				LastUpgradeCheck = 1620;
+				LastUpgradeCheck = 2630;
 				TargetAttributes = {
 					3F764C712EB09ED70028EDD1 = {
 						CreatedOnToolsVersion = 16.2;
@@ -298,10 +297,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
-				CODE_SIGN_ENTITLEMENTS = widgetExtension.entitlements;
+				CODE_SIGN_ENTITLEMENTS = widget/widgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = HRYT2ZQSJ5;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = widget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "A Day";
@@ -331,10 +329,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
-				CODE_SIGN_ENTITLEMENTS = widgetExtension.entitlements;
+				CODE_SIGN_ENTITLEMENTS = widget/widgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = HRYT2ZQSJ5;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = widget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "A Day";
@@ -394,6 +391,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = HRYT2ZQSJ5;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -417,6 +415,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -457,6 +456,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = HRYT2ZQSJ5;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -473,6 +473,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -487,8 +488,7 @@
 				CODE_SIGN_ENTITLEMENTS = batagor/batagor.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"batagor/Preview Content\"";
-				DEVELOPMENT_TEAM = HRYT2ZQSJ5;
+				DEVELOPMENT_ASSET_PATHS = "\"batagor/Resources/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = batagor/Info.plist;
@@ -534,8 +534,7 @@
 				CODE_SIGN_ENTITLEMENTS = batagor/batagor.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"batagor/Preview Content\"";
-				DEVELOPMENT_TEAM = HRYT2ZQSJ5;
+				DEVELOPMENT_ASSET_PATHS = "\"batagor/Resources/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = batagor/Info.plist;

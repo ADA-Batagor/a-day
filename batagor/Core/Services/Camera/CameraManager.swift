@@ -7,8 +7,13 @@
 
 import UIKit
 import AVFoundation
+import Combine
 
-class CameraManager: NSObject {
+enum ADayPermissionStatus {
+    case authorized, cameraDenied, microphoneDenied
+}
+
+class CameraManager: NSObject, ObservableObject, @unchecked Sendable {
     //    create a new capture session from AVFoundation
     private let captureSession = AVCaptureSession()
     
@@ -48,6 +53,9 @@ class CameraManager: NSObject {
     }
     
     private var selectedAudioDevice: AVCaptureDevice?
+    
+//    flash mode init
+    var flashMode: FlashCycle = .off
     
 //    handle rotation
     var previewLayer: AVCaptureVideoPreviewLayer?
@@ -127,6 +135,15 @@ class CameraManager: NSObject {
     
     //    preview output
     var isPreviewPaused = false
+
+    // MARK: - Interruption State
+
+    @Published var isInterrupted = false
+    @Published var interruptionMessage: String?
+    @Published var isRecordingMovie = false
+
+    private var cancellables = Set<AnyCancellable>()
+    
     private var addToPreviewStream: ((CIImage) -> Void)?
     lazy var previewStream: AsyncStream<CIImage> = {
         AsyncStream { continuation in
@@ -167,12 +184,13 @@ class CameraManager: NSObject {
         sessionQueue = DispatchQueue.init(label: Bundle.main.object(forInfoDictionaryKey: "MainAppBundleIdentifier") as! String)
         selectedCaptureDevice = availableCaptureDevices.first ?? AVCaptureDevice.default(for: .video)
         selectedAudioDevice = availableAudioDevices.first ?? AVCaptureDevice.default(for: .audio)
+        observeInterruptions()
     }
     
     //    start capture session
-    func start() async {
-        let authorized = await checkAuthorization()
-        guard authorized else { return }
+    func start() async -> ADayPermissionStatus {
+        let authorized = await checkCameraAuthorization()
+        guard authorized == .authorized else { return authorized }
         
         if isCaptureSessionConfigured {
             if !captureSession.isRunning {
@@ -180,7 +198,7 @@ class CameraManager: NSObject {
                     self.captureSession.startRunning()
                 }
             }
-            return
+            return .authorized
         }
         
         sessionQueue.async { [self] in
@@ -189,6 +207,8 @@ class CameraManager: NSObject {
                 self.captureSession.startRunning()
             }
         }
+        
+        return .authorized
     }
     
     //    stop capture session
@@ -247,20 +267,111 @@ class CameraManager: NSObject {
         }
     }
     
+    //    flash mode cycle
+    func cycleFlash() {
+        flashMode.next()
+    }
+    
+    // MARK: - Interruptions
+
+    private func observeInterruptions() {
+        NotificationCenter.default
+            .publisher(
+                for: AVCaptureSession.wasInterruptedNotification,
+                object: captureSession
+            )
+            .sink { [weak self] notification in
+                guard let self else { return }
+                DispatchQueue.main.async {
+                    self.isInterrupted = true
+                }
+
+                guard let userInfo = notification.userInfo,
+                      let reasonValue = userInfo[AVCaptureSessionInterruptionReasonKey] as? Int,
+                      let reason = AVCaptureSession.InterruptionReason(rawValue: reasonValue) else {
+                    return
+                }
+
+                switch reason {
+                case .videoDeviceInUseByAnotherClient, .audioDeviceInUseByAnotherClient:
+                    // Only surface the alert if the user was actively recording a movie.
+                    // Photo capture stays silently disabled, matching native Camera app behaviour.
+                    if self.isRecordingMovie {
+                        DispatchQueue.main.async {
+                            self.interruptionMessage = "Can't record while camera is in use by another app"
+                        }
+                    }
+                case .videoDeviceNotAvailableInBackground,
+                     .videoDeviceNotAvailableWithMultipleForegroundApps,
+                     .videoDeviceNotAvailableDueToSystemPressure:
+                    DispatchQueue.main.async {
+                        self.interruptionMessage = "Camera unavailable"
+                    }
+                case .sensitiveContentMitigationActivated:
+                    DispatchQueue.main.async {
+                        self.interruptionMessage = "Camera unavailable due to sensitive content restrictions"
+                    }
+                @unknown default:
+                    DispatchQueue.main.async {
+                        self.interruptionMessage = "Camera session was interrupted"
+                    }
+                }
+            }
+            .store(in: &cancellables)
+
+        NotificationCenter.default
+            .publisher(
+                for: AVCaptureSession.interruptionEndedNotification,
+                object: captureSession
+            )
+            .sink { [weak self] _ in
+                DispatchQueue.main.async {
+                    self?.isInterrupted = false
+                    self?.interruptionMessage = nil
+                }
+                self?.sessionQueue.async {
+                    if self?.captureSession.isRunning == false {
+                        self?.captureSession.startRunning()
+                    }
+                }
+            }
+            .store(in: &cancellables)
+    }
+
     //    start record video
-    func startRecordingVideo() {
+    @discardableResult
+    func startRecordingVideo() async -> ADayPermissionStatus {
+        // Request mic permission only when the user explicitly starts recording
+        let micStatus = await checkMicrophoneAuthorization()
+        guard micStatus == .authorized else { return micStatus }
+
+        guard !isInterrupted else {
+            DispatchQueue.main.async {
+                self.interruptionMessage = "Can't record while camera is in use by another app"
+            }
+            return .authorized
+        }
+
+        let movieFileOutput = AVCaptureMovieFileOutput()
+        if captureSession.canAddOutput(movieFileOutput) {
+            captureSession.addOutput(movieFileOutput)
+            self.movieFileOutput = movieFileOutput
+        }
+        
         guard let movieFileOutput = self.movieFileOutput else {
             print("cannot find movie file output")
-            return
+            return .authorized
         }
+        
+        applyTorch()
         
         if let movieFileOutputConnection = movieFileOutput.connection(with: .video) {
             movieFileOutputConnection.videoRotationAngle = self.newRotationAngle
         }
         
-        guard let directoryPath = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: SharedModelContainer.appGroupIdentifier) else {
+        guard let directoryPath = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: ModelContainerService.appGroupIdentifier) else {
             print("cannot access local file domain")
-            return
+            return .authorized
         }
         
         let filename = UUID().uuidString
@@ -270,6 +381,7 @@ class CameraManager: NSObject {
             .appendingPathExtension("mp4")
         
         movieFileOutput.startRecording(to: filepath, recordingDelegate: self)
+        return .authorized
     }
     
     //    stop record video
@@ -280,6 +392,29 @@ class CameraManager: NSObject {
         }
         
         movieFileOutput.stopRecording()
+        setTorch(false)
+    }
+    
+    private func applyTorch() {
+        switch self.flashMode {
+        case .off:
+            setTorch(false)
+        case .auto:
+            setTorch(true)
+        case .on:
+            setTorch(true)
+        }
+    }
+    
+    private func setTorch(_ on: Bool) {
+        guard let device = selectedCaptureDevice, device.hasTorch, device.isTorchAvailable else { return }
+        do {
+            try device.lockForConfiguration()
+            device.torchMode = on ? .on : .off
+            device.unlockForConfiguration()
+        } catch {
+            print("Torch error: \(error)")
+        }
     }
     
     //    take photo
@@ -297,7 +432,9 @@ class CameraManager: NSObject {
             }
             
             let isFlashAvailable = self.deviceInput?.device.isFlashAvailable ?? false
-            photoSettings.flashMode = isFlashAvailable ? .auto : .off
+            if isFlashAvailable {
+                photoSettings.flashMode = self.flashMode.photoFlashMode
+            }
             
             if let previewPhotoPixelFormatType = photoSettings.availablePreviewPhotoPixelFormatTypes.first {
                 photoSettings.previewPhotoFormat = [kCVPixelBufferPixelFormatTypeKey as String: previewPhotoPixelFormatType]
@@ -324,33 +461,37 @@ class CameraManager: NSObject {
             completionHandler(success)
         }
         
-        guard
-            let selectedCaptureDevice = selectedCaptureDevice,
-            let selectedAudioDevice = selectedAudioDevice,
-            let deviceInput = try? AVCaptureDeviceInput(device: selectedCaptureDevice),
-            let audioInput = try? AVCaptureDeviceInput(device: selectedAudioDevice)
-        else {
-            print("failed obtain video input")
-            return
-        }
-        
-        let movieFileOutput = AVCaptureMovieFileOutput()
-        
         let photoOutput = AVCapturePhotoOutput()
-//        captureSession.sessionPreset = AVCaptureSession.Preset.photo
         captureSession.sessionPreset = AVCaptureSession.Preset.high
         
         let videoOutput = AVCaptureVideoDataOutput()
         videoOutput.setSampleBufferDelegate(self, queue: DispatchQueue(label: Bundle.main.object(forInfoDictionaryKey: "MainAppBundleIdentifier") as! String + ".output"))
         
+        guard
+            let selectedCaptureDevice = selectedCaptureDevice,
+            let deviceInput = try? AVCaptureDeviceInput(device: selectedCaptureDevice)
+        else {
+            print("failed obtain video input")
+            return
+        }
+        
         guard captureSession.canAddInput(deviceInput) else {
             print("can't add video device input to capture session")
             return
         }
-        guard captureSession.canAddInput(audioInput) else {
-            print("can't add audio device input to capture session")
-            return
+        captureSession.addInput(deviceInput)
+        self.deviceInput = deviceInput
+        
+        // do not fail the camera preview if microphone is being used by other apps
+        if let selectedAudioDevice = selectedAudioDevice,
+           let audioInput = try? AVCaptureDeviceInput(device: selectedAudioDevice),
+           captureSession.canAddInput(audioInput) {
+            captureSession.addInput(audioInput)
+            self.audioInput = audioInput
+        } else {
+            print("Warning: Microphone input is currently unavailable and has been skipped.")
         }
+        
         guard captureSession.canAddOutput(photoOutput) else {
             print("can't add photo output to capture session")
             return
@@ -360,17 +501,11 @@ class CameraManager: NSObject {
             return
         }
         
-        captureSession.addInput(deviceInput)
-        captureSession.addInput(audioInput)
         captureSession.addOutput(photoOutput)
         captureSession.addOutput(videoOutput)
-        captureSession.addOutput(movieFileOutput)
         
-        self.deviceInput = deviceInput
-        self.audioInput = audioInput
         self.photoOutput = photoOutput
         self.videoOutput = videoOutput
-        self.movieFileOutput = movieFileOutput
         
         photoOutput.maxPhotoQualityPrioritization = .balanced
         
@@ -428,26 +563,40 @@ class CameraManager: NSObject {
         }
     }
     
-    //    check autorization for camera access
-    private func checkAuthorization() async -> Bool {
-        switch AVCaptureDevice.authorizationStatus(for: .video) {
-        case .authorized:
-            print("camera access: authorized")
-            return true
-        case .notDetermined:
-            print("camera access: not determined")
+    //    check authorization for camera access only (mic is NOT requested here)
+    private func checkCameraAuthorization() async -> ADayPermissionStatus {
+        let cameraStatus = AVCaptureDevice.authorizationStatus(for: .video)
+        if cameraStatus == .denied || cameraStatus == .restricted {
+            return .cameraDenied
+        }
+        if cameraStatus == .notDetermined {
             sessionQueue.suspend()
-            let status = await AVCaptureDevice.requestAccess(for: .video)
+            let granted = await AVCaptureDevice.requestAccess(for: .video)
             sessionQueue.resume()
-            return status
-        case .denied:
-            print("camera access: denied")
-            return false
-        case .restricted:
-            print("camera access: restricted")
-            return false
-        default:
-            return false
+            if !granted { return .cameraDenied }
+        }
+        return .authorized
+    }
+
+    //    check authorization for microphone — called only when video recording starts
+    private func checkMicrophoneAuthorization() async -> ADayPermissionStatus {
+        let audioStatus = AVCaptureDevice.authorizationStatus(for: .audio)
+        if audioStatus == .denied || audioStatus == .restricted {
+            return .microphoneDenied
+        }
+        if audioStatus == .notDetermined {
+            sessionQueue.suspend()
+            let granted = await AVCaptureDevice.requestAccess(for: .audio)
+            sessionQueue.resume()
+            if !granted { return .microphoneDenied }
+        }
+        return .authorized
+    }
+
+    func resetInterruption() {
+        DispatchQueue.main.async {
+            self.isInterrupted = false
+            self.interruptionMessage = nil
         }
     }
 }
@@ -463,12 +612,59 @@ extension CameraManager: AVCapturePhotoCaptureDelegate {
 }
 
 extension CameraManager: AVCaptureFileOutputRecordingDelegate {
-    func fileOutput(_ output: AVCaptureFileOutput, didFinishRecordingTo outputFileURL: URL, from connections: [AVCaptureConnection], error: (any Error)?) {
-        if let error = error {
-            print("file output error: \(error.localizedDescription)")
+    func fileOutput(_ output: AVCaptureFileOutput,
+                    didStartRecordingTo fileURL: URL,
+                    from connections: [AVCaptureConnection]) {
+        DispatchQueue.main.async {
+            self.isRecordingMovie = true
+        }
+    }
+
+    func fileOutput(_ output: AVCaptureFileOutput,
+                    didFinishRecordingTo outputFileURL: URL,
+                    from connections: [AVCaptureConnection],
+                    error: (any Error)?) {
+        DispatchQueue.main.async {
+            self.isRecordingMovie = false
+        }
+        self.sessionQueue.async {
+            if let currentOutput = self.movieFileOutput {
+                self.captureSession.removeOutput(currentOutput)
+                self.movieFileOutput = nil
+            }
         }
         
-        addToMovieFileStream?(outputFileURL)
+        var recordingSuccess = true
+        if let error = error {
+            print("file output error: \(error.localizedDescription)")
+            
+            let nsError = error as NSError
+            if let successfullyFinished = nsError.userInfo[AVErrorRecordingSuccessfullyFinishedKey] as? Bool {
+                recordingSuccess = successfullyFinished
+            } else {
+                recordingSuccess = false
+            }
+            
+            if !recordingSuccess {
+                DispatchQueue.main.async {
+                    self.isInterrupted = true
+                    if nsError.code == AVError.diskFull.rawValue {
+                        self.interruptionMessage = "Cannot start recording, disk is full"
+                    } else if nsError.code == AVError.sessionWasInterrupted.rawValue {
+                        self.interruptionMessage = "Cannot start recording, camera is in use by another app"
+                    } else {
+                        self.interruptionMessage = "Cannot start recording, camera might be used by another app"
+                    }
+                }
+                
+                // Clean up the file
+                try? FileManager.default.removeItem(at: outputFileURL)
+            }
+        }
+        
+        if recordingSuccess {
+            addToMovieFileStream?(outputFileURL)
+        }
     }
 }
 

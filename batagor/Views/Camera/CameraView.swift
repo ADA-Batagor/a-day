@@ -14,7 +14,7 @@ struct Camera: View {
     
     @Environment(\.modelContext) private var modelContext
     
-    @EnvironmentObject var timer: SharedTimerManager
+    @EnvironmentObject var timer: TimerManager
     @EnvironmentObject var navigationManager: NavigationManager
     
     @StateObject private var cameraViewModel = CameraViewModel()
@@ -104,22 +104,20 @@ struct Camera: View {
                                             }
                                     )
                             }
-                            
-                            if cameraViewModel.camera.isRunning && !cameraViewModel.camera.isPreviewPaused {
-                                CameraToolbar(
-                                    cameraViewModel: cameraViewModel,
-                                    storageCount: storages.count,
-                                    latestStorage: storages.last,
-                                    currentDuration: $currentDuration,
-                                    isRecording: $isRecording,
-                                    capturingPhoto: $capturingPhoto
-                                )
-                                .containerRelativeFrame(.vertical) { height, _ in
-                                    height * 0.15
-                                }
-                                .padding(.horizontal, 40)
-                                .padding(.bottom, 30)
+                           
+                            CameraToolbar(
+                                cameraViewModel: cameraViewModel,
+                                storageCount: storages.count,
+                                latestStorage: storages.last,
+                                currentDuration: $currentDuration,
+                                isRecording: $isRecording,
+                                capturingPhoto: $capturingPhoto
+                            )
+                            .containerRelativeFrame(.vertical) { height, _ in
+                                height * 0.15
                             }
+                            .padding(.horizontal, 40)
+                            .padding(.bottom, 30)
                         }
                         .safeAreaPadding(.top)
                         
@@ -164,13 +162,71 @@ struct Camera: View {
                     .padding(.leading, 8)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    GalleryCount(currentCount: storages.count, foregroundColor: Color.lightBase, countOnly: true)
+                    HStack(alignment: .center) {
+                        Button {
+                            cameraViewModel.camera.cycleFlash()
+                        } label: {
+                            Image(
+                                systemName: cameraViewModel.camera.flashMode.iconName
+                            )
+                            .font(.system(size: 12))
+                            .foregroundColor(.white)
+                            .padding(5)
+                            .background(
+                                cameraViewModel.camera.flashMode.rawValue == 2 ? Color.adaySecondary : Color.white
+                                    .opacity(0.4)
+                            )
+                            .clipShape(Circle())
+                        }
+                        
+                        GalleryCount(currentCount: storages.count, foregroundColor: Color.lightBase, countOnly: true)
+                    }
                 }
             }
             .ignoresSafeArea(.all)
         }
         .task {
-            await cameraViewModel.camera.start()
+            await cameraViewModel.startCamera()
+        }
+        .alert(
+            "Camera Access Required",
+            isPresented: $cameraViewModel.showCameraPermissionAlert
+        ) {
+            Button("Open Settings") {
+                if let settingsURL = URL(
+                    string: UIApplication.openSettingsURLString
+                ) {
+                    UIApplication.shared.open(settingsURL)
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("A Day needs camera access to take photos and record videos. Please enable it in Settings.")
+        }
+        .alert(
+            "Microphone Access Required",
+            isPresented: $cameraViewModel.showMicrophonePermissionAlert
+        ) {
+            Button("Open Settings") {
+                if let settingsURL = URL(
+                    string: UIApplication.openSettingsURLString
+                ) {
+                    UIApplication.shared.open(settingsURL)
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("A Day needs microphone access to record audio in your videos. Please enable it in Settings.")
+        }
+        .alert(
+            "Camera Interrupted",
+            isPresented: $cameraViewModel.showInterruptionAlert
+        ) {
+            Button("OK", role: .cancel) {
+                cameraViewModel.resetInterruption()
+            }
+        } message: {
+            Text(cameraViewModel.cameraInterruptionMessage ?? "The camera session was interrupted.")
         }
         .onAppear {
             if storages.count >= MEDIA_LIMIT {
@@ -215,26 +271,9 @@ struct Camera: View {
                 .animation(.easeInOut(duration: 0.15), value: configuration.isPressed)
         }
     }
-    
-    struct FocusIndicator: View {
-        @State private var scale: CGFloat = 1.2
-        
-        var body: some View {
-            Rectangle()
-                .stroke(Color.yellow, lineWidth: 2)
-                .frame(width: 70, height: 70)
-                .scaleEffect(scale)
-                .opacity(scale > 1.0 ? 0.0 : 1.0)
-                .onAppear {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                        scale = 1.0
-                    }
-                }
-        }
-    }
 }
 
 #Preview {
     Camera()
-        .environmentObject(SharedTimerManager.shared)
+        .environmentObject(TimerManager.shared)
 }

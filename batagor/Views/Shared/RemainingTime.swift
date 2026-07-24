@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct RemainingTime: View {
-    @EnvironmentObject var timer: SharedTimerManager
+    @EnvironmentObject var timer: TimerManager
 
     @State private var timeRemaining: TimeInterval = 0
     

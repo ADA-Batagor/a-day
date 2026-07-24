@@ -1,5 +1,5 @@
 //
-//  ReverseGeocodeManager.swift
+//  GeocodeManager.swift
 //  batagor
 //
 //  Created by Gede Pramananda Kusuma Wisesa on 11/11/25.
@@ -10,7 +10,7 @@ import CoreLocation
 import MapKit
 
 @MainActor
-class ReverseGeocodeManager: ObservableObject {
+class GeocodeManager: ObservableObject {
     @Published var placemarkInfo: PlacemarkInfo?
     @Published var isLoading: Bool = false
     
