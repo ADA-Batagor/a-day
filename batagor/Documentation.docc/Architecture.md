@@ -5,9 +5,7 @@ and where the `widgetExtension` target fits in.
 
 ## MVVM shape
 
-```
-Views/  ──observes──>  ViewModels/  ──calls──>  Core/Services/*  ──reads/writes──>  Models/
-```
+@Image(source: "architecture-diagram.svg", alt: "Diagram of Views calling into ViewModels, which call the four Core/Services subsystems (Camera, Location, Storage, System), which read and write Models backed by a shared App Group container. widgetExtension reads that same store directly and is notified via WidgetCenter.reloadAllTimelines() after writes.")
 
 - **`Views/`** are SwiftUI structs. They hold no business logic — they bind to a
   `ViewModel` (via `@StateObject`/`@ObservedObject`) or read a shared `Manager`
