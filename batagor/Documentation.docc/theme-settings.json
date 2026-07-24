@@ -1,0 +1,22 @@
+{
+  "theme": {
+    "color": {
+      "documentation-intro-fill": {
+        "light": "#FAF4E6",
+        "dark": "#1C1C1C"
+      },
+      "documentation-intro-accent": {
+        "light": "#A7CBFF",
+        "dark": "#D5FFE0"
+      },
+      "link": {
+        "light": "#1C1C1C",
+        "dark": "#D5FFE0"
+      },
+      "button-background": {
+        "light": "#A7CBFF",
+        "dark": "#D5FFE0"
+      }
+    }
+  }
+}

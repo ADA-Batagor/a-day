@@ -40,7 +40,8 @@ jobs:
           "$(xcrun --find docc)" process-archive transform-for-static-hosting \
             "$archive" \
             --output-path site \
-            --hosting-base-path a-day
+            --hosting-base-path a-day \
+            --theme-settings-file batagor/Documentation.docc/theme-settings.json
 
       - name: Redirect site root to the module page
         run: |
