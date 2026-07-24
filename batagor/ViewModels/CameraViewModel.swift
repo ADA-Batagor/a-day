@@ -10,6 +10,7 @@ import SwiftUI
 import SwiftData
 import WidgetKit
 import CoreLocation
+import Combine
 
 @MainActor
 class CameraViewModel: ObservableObject {
@@ -25,9 +26,34 @@ class CameraViewModel: ObservableObject {
     @Published var previewImage: Image?
     @Published var photoTaken: PhotoData?
     @Published var movieFileURL: URL?
+    @Published var showCameraPermissionAlert = false
+    @Published var showMicrophonePermissionAlert = false
+    @Published var recordingDenied = false
+    @Published var isCameraInterrupted = false
+    @Published var cameraInterruptionMessage: String? = nil
+    @Published var showInterruptionAlert = false
+    
+    private var cancellables = Set<AnyCancellable>()
     
     init() {
         locationManager.requestPermission()
+        
+        camera.$isInterrupted
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isInterrupted in
+                self?.isCameraInterrupted = isInterrupted
+            }
+            .store(in: &cancellables)
+            
+        camera.$interruptionMessage
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] message in
+                self?.cameraInterruptionMessage = message
+                if message != nil {
+                    self?.showInterruptionAlert = true
+                }
+            }
+            .store(in: &cancellables)
         
         Task {
             await handleCameraPreview()
@@ -39,6 +65,18 @@ class CameraViewModel: ObservableObject {
         
         Task {
             await handleCameraMovie()
+        }
+    }
+    
+    func startCamera() async {
+        let status = await camera.start()
+        switch status {
+        case .authorized:
+            break
+        case .cameraDenied:
+            showCameraPermissionAlert = true
+        case .microphoneDenied:
+            showMicrophonePermissionAlert = true
         }
     }
     
@@ -142,7 +180,25 @@ class CameraViewModel: ObservableObject {
             WidgetCenter.shared.reloadAllTimelines()
         }
         
-        movieFileURL = nil
+    }
+    
+    func startRecordingVideo() {
+        recordingDenied = false
+        Task {
+            let status = await camera.startRecordingVideo()
+            if status == .microphoneDenied {
+                showMicrophonePermissionAlert = true
+                recordingDenied = true
+            }
+        }
+    }
+
+    func resetInterruption() {
+        camera.resetInterruption()
+        camera.isPreviewPaused = false
+        Task {
+            await startCamera()
+        }
     }
     
     private func unpackPhoto(_ photo: AVCapturePhoto) -> PhotoData? {

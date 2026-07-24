@@ -104,22 +104,20 @@ struct Camera: View {
                                             }
                                     )
                             }
-//                            
-                            if cameraViewModel.camera.isRunning && !cameraViewModel.camera.isPreviewPaused {
-                                CameraToolbar(
-                                    cameraViewModel: cameraViewModel,
-                                    storageCount: storages.count,
-                                    latestStorage: storages.last,
-                                    currentDuration: $currentDuration,
-                                    isRecording: $isRecording,
-                                    capturingPhoto: $capturingPhoto
-                                )
-                                .containerRelativeFrame(.vertical) { height, _ in
-                                    height * 0.15
-                                }
-                                .padding(.horizontal, 40)
-                                .padding(.bottom, 30)
+                           
+                            CameraToolbar(
+                                cameraViewModel: cameraViewModel,
+                                storageCount: storages.count,
+                                latestStorage: storages.last,
+                                currentDuration: $currentDuration,
+                                isRecording: $isRecording,
+                                capturingPhoto: $capturingPhoto
+                            )
+                            .containerRelativeFrame(.vertical) { height, _ in
+                                height * 0.15
                             }
+                            .padding(.horizontal, 40)
+                            .padding(.bottom, 30)
                         }
                         .safeAreaPadding(.top)
                         
@@ -188,7 +186,47 @@ struct Camera: View {
             .ignoresSafeArea(.all)
         }
         .task {
-            await cameraViewModel.camera.start()
+            await cameraViewModel.startCamera()
+        }
+        .alert(
+            "Camera Access Required",
+            isPresented: $cameraViewModel.showCameraPermissionAlert
+        ) {
+            Button("Open Settings") {
+                if let settingsURL = URL(
+                    string: UIApplication.openSettingsURLString
+                ) {
+                    UIApplication.shared.open(settingsURL)
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("A Day needs camera access to take photos and record videos. Please enable it in Settings.")
+        }
+        .alert(
+            "Microphone Access Required",
+            isPresented: $cameraViewModel.showMicrophonePermissionAlert
+        ) {
+            Button("Open Settings") {
+                if let settingsURL = URL(
+                    string: UIApplication.openSettingsURLString
+                ) {
+                    UIApplication.shared.open(settingsURL)
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("A Day needs microphone access to record audio in your videos. Please enable it in Settings.")
+        }
+        .alert(
+            "Camera Interrupted",
+            isPresented: $cameraViewModel.showInterruptionAlert
+        ) {
+            Button("OK", role: .cancel) {
+                cameraViewModel.resetInterruption()
+            }
+        } message: {
+            Text(cameraViewModel.cameraInterruptionMessage ?? "The camera session was interrupted.")
         }
         .onAppear {
             if storages.count >= MEDIA_LIMIT {
