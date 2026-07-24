@@ -9,6 +9,9 @@ import Foundation
 import SwiftData
 import CoreLocation
 
+/// A single captured photo or video: its file locations, expiry, and optional
+/// GPS/place data. The SwiftData `@Model` backing the shared store both `batagor`
+/// and `widgetExtension` read from. See <doc:StorageAndDeletion>.
 @Model
 class Storage {
     var id: UUID
@@ -21,15 +24,18 @@ class Storage {
     var altitude: Double?
     var locationName: String?
     var locationCity: String?
-    
+
+    /// Whether `expiredAt` has passed — the condition `DeletionService` sweeps on.
     var isExpired: Bool {
         return Date() > expiredAt
     }
-    
+
+    /// Whether `mainPath` points at a video (`.mp4`) rather than a photo.
     var isVideo: Bool {
         return mainPath.pathExtension.lowercased() == "mp4"
     }
-    
+
+    /// Seconds until `expiredAt`, clamped to zero — what countdown UI displays.
     var timeRemaining: TimeInterval {
         max(0, expiredAt.timeIntervalSince(Date()))
     }
