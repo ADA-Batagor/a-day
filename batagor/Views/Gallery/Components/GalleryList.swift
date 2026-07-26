@@ -188,7 +188,7 @@ struct GalleryList: View {
                         .contentShape(Rectangle())
                     }
                     .padding(.horizontal)
-                    .padding(.bottom, 17)
+                    .padding(.vertical, 8)
                     .listRowInsets(EdgeInsets())
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.lightBase)

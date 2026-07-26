@@ -10,15 +10,18 @@ import CoreLocation
 
 struct GalleryItem: View {
     let storage: Storage
-    
+
     @Binding var isSelecting: Bool
     @Binding var isSelected: Bool
     @Binding var isSwiped: Bool
-    
+
+    @Environment(\.modelContext) private var modelContext
+
     @State private var selectedStorage: Storage?
     @State private var showCover: Bool = false
     @State private var videoDuration: Double?
-    
+    @State private var showDeleteConfirmation: Bool = false
+
     @StateObject private var geocodeManager = GeocodeManager()
     
     var body: some View {
@@ -37,6 +40,31 @@ struct GalleryItem: View {
                             selectedStorage = storage
                             showCover = true
                         }
+                    }
+                    .contextMenu {
+                        Button {
+                            print("edit tapped")
+                        } label: {
+                            Label("Save", systemImage: "square.and.arrow.down")
+                        }
+                        
+                        ShareLink(item: storage.mainPath) {
+                            Label("Share", systemImage: "square.and.arrow.up")
+                        }
+                        
+                        Divider()
+                        
+                        Button(role: .destructive) {
+                            showDeleteConfirmation = true
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
+
+                    } preview: {
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(height: 450)
                     }
             }
         }
@@ -106,6 +134,16 @@ struct GalleryItem: View {
                 videoDuration = await TimeFormatter.getVideoDuration(from: storage.mainPath)
             }
         }
+        .customConfirmationDialog(
+            "Don't need this snap anymore?",
+            isPresented: $showDeleteConfirmation,
+            actionTitle: "Delete",
+            actionColor: .redBase,
+            action: {
+                DeletionService.shared.manualDelete(modelContext: modelContext, storage: storage)
+            },
+            message: "This will delete it for good. This action can't be undone."
+        )
     }
 }
 
