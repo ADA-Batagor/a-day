@@ -150,7 +150,7 @@ struct DetailView: View {
                                         
                                         if isShowedDetail {
                                             DetailInfoCard(storage: storage)
-                                                .padding(.top, 24)
+                                                .padding(.top, 10)
                                                 .transition(.move(edge: .bottom).combined(with: .opacity))
                                         }
 
@@ -284,7 +284,7 @@ struct DetailView: View {
                                     showCover = false
                                 }
                             } else if value.translation.height < -50 {
-                                withAnimation(.bouncy) {
+                                withAnimation(.easeOut(duration: 0.3)) {
                                     isShowedDetail = true
                                 }
                             } else {
@@ -297,7 +297,7 @@ struct DetailView: View {
                     } else {
                         if value.translation.height > value.translation.width &&
                             value.translation.height > 50 {
-                            withAnimation(.bouncy) {
+                            withAnimation(.easeOut(duration: 0.3)) {
                                 isShowedDetail = false
                             }
                         }
