@@ -24,6 +24,7 @@ struct GalleryItem: View {
     @State private var showSaveToast: Bool = false
     @State private var saveToastMessage: String = ""
     @State private var saveToastIcon: String = "checkmark.circle"
+    @State private var showPhotoLibraryPermissionAlert: Bool = false
     
     @StateObject private var geocodeManager = GeocodeManager()
     
@@ -147,6 +148,21 @@ struct GalleryItem: View {
             message: "This will delete it for good. This action can't be undone."
         )
         .toast(isShowing: $showSaveToast, message: saveToastMessage, icon: saveToastIcon)
+        .alert(
+            "Photos Access Required",
+            isPresented: $showPhotoLibraryPermissionAlert
+        ) {
+            Button("Open Settings") {
+                if let settingsURL = URL(
+                    string: UIApplication.openSettingsURLString
+                ) {
+                    UIApplication.shared.open(settingsURL)
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("A Day needs Photos access to save this snap. Please enable it in Settings.")
+        }
     }
 
     private func saveToPhotos() {
@@ -155,11 +171,14 @@ struct GalleryItem: View {
                 try await PhotoLibraryService.shared.save(storage)
                 saveToastIcon = "checkmark.circle"
                 saveToastMessage = "Saved to Photos."
+                showSaveToast = true
+            } catch PhotoLibrarySaveError.permissionDenied {
+                showPhotoLibraryPermissionAlert = true
             } catch {
                 saveToastIcon = "exclamationmark.triangle"
                 saveToastMessage = error.localizedDescription
+                showSaveToast = true
             }
-            showSaveToast = true
         }
     }
 }
