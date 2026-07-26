@@ -10,18 +10,21 @@ import CoreLocation
 
 struct GalleryItem: View {
     let storage: Storage
-
+    
     @Binding var isSelecting: Bool
     @Binding var isSelected: Bool
     @Binding var isSwiped: Bool
-
+    
     @Environment(\.modelContext) private var modelContext
-
+    
     @State private var selectedStorage: Storage?
     @State private var showCover: Bool = false
     @State private var videoDuration: Double?
     @State private var showDeleteConfirmation: Bool = false
-
+    @State private var showSaveToast: Bool = false
+    @State private var saveToastMessage: String = ""
+    @State private var saveToastIcon: String = "checkmark.circle"
+    
     @StateObject private var geocodeManager = GeocodeManager()
     
     var body: some View {
@@ -43,7 +46,7 @@ struct GalleryItem: View {
                     }
                     .contextMenu {
                         Button {
-                            print("edit tapped")
+                            saveToPhotos()
                         } label: {
                             Label("Save", systemImage: "square.and.arrow.down")
                         }
@@ -59,7 +62,7 @@ struct GalleryItem: View {
                         } label: {
                             Label("Delete", systemImage: "trash")
                         }
-
+                        
                     } preview: {
                         Image(uiImage: image)
                             .resizable()
@@ -101,14 +104,13 @@ struct GalleryItem: View {
                 )
                 .allowsHitTesting(false)
             }
-                
         }
         .overlay(alignment: .bottom) {
             if !isSelecting {
                 TimeRemainingBar(storage: storage)
             }
             
-             if isSelecting && isSelected {
+            if isSelecting && isSelected {
                 ZStack(alignment: .topLeading) {
                     RoundedRectangle(cornerRadius: 12)
                         .strokeBorder(Color.blueBase, lineWidth: 3)
@@ -144,6 +146,21 @@ struct GalleryItem: View {
             },
             message: "This will delete it for good. This action can't be undone."
         )
+        .toast(isShowing: $showSaveToast, message: saveToastMessage, icon: saveToastIcon)
+    }
+
+    private func saveToPhotos() {
+        Task {
+            do {
+                try await PhotoLibraryService.shared.save(storage)
+                saveToastIcon = "checkmark.circle"
+                saveToastMessage = "Saved to Photos."
+            } catch {
+                saveToastIcon = "exclamationmark.triangle"
+                saveToastMessage = error.localizedDescription
+            }
+            showSaveToast = true
+        }
     }
 }
 
