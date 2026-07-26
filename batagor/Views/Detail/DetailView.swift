@@ -115,6 +115,7 @@ struct DetailView: View {
                                         if storage.mainPath.pathExtension == "mp4" {
                                             if selectedThumbnail == storage {
                                                 VideoPlayer(player: player)
+                                                    .frame(maxWidth: .infinity)
                                                     .overlay(alignment: .bottom) {
                                                         TimeRemainingBar(storage: storage, showText: false)
                                                     }
@@ -131,16 +132,19 @@ struct DetailView: View {
                                             }
                                         } else {
                                             if let uiImage = StorageManager.shared.loadUIImage(fileURL: storage.mainPath) {
-                                                Image(uiImage: uiImage)
-                                                    .resizable()
-                                                    .scaledToFit()
+                                                GeometryReader { imageGeo in
+                                                    Image(uiImage: uiImage)
+                                                        .resizable()
+                                                        .scaledToFill()
+                                                        .frame(width: imageGeo.size.width, height: imageGeo.size.height)
+                                                        .clipped()
+                                                }
                                                     .overlay(alignment: .bottom) {
                                                         TimeRemainingBar(storage: storage, showText: false)
                                                     }
                                                     .clipShape(.rect(cornerRadius: 12))
                                                     .scaleEffect(scale * dismissScale)
                                                     .offset(CGSize(width: offset.width + dismissOffset.width, height: offset.height + dismissOffset.height))
-                                                
                                             }
                                         }
                                         
