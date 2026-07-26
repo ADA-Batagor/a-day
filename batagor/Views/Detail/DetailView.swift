@@ -139,51 +139,21 @@ struct DetailView: View {
                                                         .frame(width: imageGeo.size.width, height: imageGeo.size.height)
                                                         .clipped()
                                                 }
-                                                    .overlay(alignment: .bottom) {
-                                                        TimeRemainingBar(storage: storage, showText: false)
-                                                    }
-                                                    .clipShape(.rect(cornerRadius: 12))
-                                                    .scaleEffect(scale * dismissScale)
-                                                    .offset(CGSize(width: offset.width + dismissOffset.width, height: offset.height + dismissOffset.height))
+                                                .overlay(alignment: .bottom) {
+                                                    TimeRemainingBar(storage: storage, showText: false)
+                                                }
+                                                .clipShape(.rect(cornerRadius: 12))
+                                                .scaleEffect(scale * dismissScale)
+                                                .offset(CGSize(width: offset.width + dismissOffset.width, height: offset.height + dismissOffset.height))
                                             }
                                         }
                                         
                                         if isShowedDetail {
-                                            Spacer()
-                                            VStack(alignment: .leading) {
-                                                HStack {
-                                                    Text("Come")
-                                                        .font(.spaceGroteskSemiBold(size: 15))
-                                                        .foregroundStyle(Color.darkBase)
-                                                    Text(storage.createdAt.formatted(date: .abbreviated, time: .shortened))
-                                                        .font(.spaceGroteskRegular(size: 15))
-                                                        .foregroundStyle(Color.darkBase)
-                                                }
-                                                
-                                                HStack {
-                                                    Text("Gone")
-                                                        .font(.spaceGroteskSemiBold(size: 15))
-                                                        .foregroundStyle(Color.darkBase)
-                                                    Text(storage.expiredAt.formatted(date: .abbreviated, time: .shortened))
-                                                        .font(.spaceGroteskRegular(size: 15))
-                                                        .foregroundStyle(Color.darkBase)
-                                                }
-                                                
-                                                if let location = storage.locationName,
-                                                   let city = storage.locationCity {
-                                                    Text("\(location), \(city)")
-                                                        .font(.spaceGroteskRegular(size: 15))
-                                                        .foregroundStyle(Color.darkBase)
-                                                    
-                                                    MapThumbnail(storage: storage)
-                                                        .clipShape(.rect(cornerRadius: 12))
-                                                        .containerRelativeFrame(.vertical) { height, _ in
-                                                            height * 0.2
-                                                        }
-                                                }
-                                            }
+                                            DetailInfoCard(storage: storage)
+                                                .padding(.top, 24)
+                                                .transition(.move(edge: .bottom).combined(with: .opacity))
                                         }
-                                        
+
                                     }
                                     .id(storage.id)
                                     .containerRelativeFrame(.horizontal)
@@ -221,7 +191,7 @@ struct DetailView: View {
                 }
                 .padding(.horizontal, 35)
                 .offset(y: geo.size.height * 0.07)
-
+                
                 if !isShowedDetail {
                     ZStack {
                         Knob()
@@ -276,62 +246,62 @@ struct DetailView: View {
             
             DragGesture()
                 .onChanged { value in
-                    //                    if !isShowedDetail {
-                    if !isZoomed {
-                        if abs(value.translation.height) > abs(value.translation.width) {
-                            blockHorizontal = true
-                            if value.translation.height > abs(value.translation.width) {
-                                dismissOffset.height = value.translation.height
-                                let progress = min(abs(value.translation.height) / 200, 1.0)
-                                dismissScale = 1.0 - (progress * 0.5)
+                    if !isShowedDetail {
+                        if !isZoomed {
+                            if abs(value.translation.height) > abs(value.translation.width) {
+                                blockHorizontal = true
+                                if value.translation.height > abs(value.translation.width) {
+                                    dismissOffset.height = value.translation.height
+                                    let progress = min(abs(value.translation.height) / 200, 1.0)
+                                    dismissScale = 1.0 - (progress * 0.5)
+                                }
                             }
+                        } else {
+                            blockHorizontal = true
+                            offset = CGSize(
+                                width: lastOffset.width + value.translation.width,
+                                height: lastOffset.height + value.translation.height
+                            )
                         }
                     } else {
-                        blockHorizontal = true
-                        offset = CGSize(
-                            width: lastOffset.width + value.translation.width,
-                            height: lastOffset.height + value.translation.height
-                        )
+                        if abs(value.translation.height) > abs(value.translation.width) {
+                            blockHorizontal = true
+                        }
                     }
-                    //                    } else {
-                    //                        if abs(value.translation.height) > abs(value.translation.width) {
-                    //                            blockHorizontal = true
-                    //                        }
-                    //                    }
                 }
                 .onEnded { value in
                     lastOffset = offset
                     
-                    //                    if !isShowedDetail {
-                    if !isZoomed {
-                        if value.translation.height > 150 {
-                            withAnimation(.easeOut(duration: 0.3)) {
-                                dismissOffset = CGSize(width: 0, height: value.translation.height > 0 ? 1000 : -1000)
-                                dismissScale = 0
+                    if !isShowedDetail {
+                        if !isZoomed {
+                            if value.translation.height > 150 {
+                                withAnimation(.easeOut(duration: 0.3)) {
+                                    dismissOffset = CGSize(width: 0, height: value.translation.height > 0 ? 1000 : -1000)
+                                    dismissScale = 0
+                                }
+                                
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                    showCover = false
+                                }
+                            } else if value.translation.height < -50 {
+                                withAnimation(.bouncy) {
+                                    isShowedDetail = true
+                                }
+                            } else {
+                                withAnimation(.spring()) {
+                                    dismissOffset = .zero
+                                    dismissScale = 1.0
+                                }
                             }
-                            
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                showCover = false
-                            }
-//                        } else if value.translation.height < -50 {
-//                            withAnimation(.bouncy) {
-//                                isShowedDetail = true
-//                            }
-                        } else {
-                            withAnimation(.spring()) {
-                                dismissOffset = .zero
-                                dismissScale = 1.0
+                        }
+                    } else {
+                        if value.translation.height > value.translation.width &&
+                            value.translation.height > 50 {
+                            withAnimation(.bouncy) {
+                                isShowedDetail = false
                             }
                         }
                     }
-                    //                    } else {
-                    //                        if value.translation.height > value.translation.width &&
-                    //                            value.translation.height > 50 {
-                    //                            withAnimation(.bouncy) {
-                    //                                isShowedDetail = false
-                    //                            }
-                    //                        }
-                    //                    }
                     
                     blockHorizontal = false
                 }
