@@ -65,15 +65,41 @@ Technical documentation lives in `batagor/Documentation.docc` (built via
 `main`). Project structure and naming conventions stay in this repo's `README.md` —
 the DocC catalog covers architecture and behavior instead.
 
-- **New `Service`/`Manager`/`ViewModel`**: add a `///` summary doc comment on the
-  type (and its non-trivial public methods). Trivial SwiftUI view structs don't need
-  this — they're self-explanatory.
 - **Architecture-affecting change** (new subsystem, changed data flow between
   existing ones): update the relevant article under `Documentation.docc` in the same
   PR — don't let it drift to a follow-up.
 - **Tutorials** (`Documentation.docc/Tutorials`) are a periodically-refreshed
   onboarding aid, not living reference docs — they don't need to track every change,
   just stay roughly accurate.
+
+### When to add a `///` comment
+
+**Add one:**
+- On every new type in `Core/Services/*` (`*Manager`/`*Service`) and `ViewModels/*`
+  — at minimum a one-line summary of what it owns/does.
+- On every new type in `Models/*` (`@Model` types, shared structs/enums) — same,
+  plus any computed property that carries real logic (not a plain stored value).
+- On any method or property whose behavior isn't obvious from its name and
+  signature alone — side effects (widget reloads, background task registration),
+  "why does this run more than once," non-obvious ordering, etc. This applies
+  regardless of type — a tricky private helper deserves a plain `//` note even
+  though it won't get a `///`.
+
+**Skip it:**
+- SwiftUI `View` structs — self-explanatory from name + body.
+- Plain stored properties with obvious names/types (`var id: UUID`).
+- One-off `Extensions/*` helpers (`Color+Ext`, `Font+Ext`) unless the mapping
+  itself is non-obvious.
+
+**Known limitation, so nobody's surprised later:** `///` comments show up in
+Xcode's Quick Help (⌥-click) regardless of access level — that works today for
+everything documented so far. They do **not** appear in the built DocC website
+unless the symbol is `public`/`open`, and this codebase intentionally keeps
+everything at the default `internal` access level (there's no external consumer
+to design a public API surface for, and marking things `public` cascades into
+unrelated access-control changes). So right now, writing a `///` comment gets you
+Quick Help, not a rendered page on the doc site — that's an accepted trade-off,
+not a bug, unless the team decides the generated symbol pages are worth revisiting.
 
 ## Labels
 
