@@ -132,19 +132,15 @@ struct DetailView: View {
                                             }
                                         } else {
                                             if let uiImage = StorageManager.shared.loadUIImage(fileURL: storage.mainPath) {
-                                                GeometryReader { imageGeo in
-                                                    Image(uiImage: uiImage)
-                                                        .resizable()
-                                                        .scaledToFill()
-                                                        .frame(width: imageGeo.size.width, height: imageGeo.size.height)
-                                                        .clipped()
-                                                }
-                                                .overlay(alignment: .bottom) {
-                                                    TimeRemainingBar(storage: storage, showText: false)
-                                                }
-                                                .clipShape(.rect(cornerRadius: 12))
-                                                .scaleEffect(scale * dismissScale)
-                                                .offset(CGSize(width: offset.width + dismissOffset.width, height: offset.height + dismissOffset.height))
+                                                Image(uiImage: uiImage)
+                                                    .resizable()
+                                                    .scaledToFit()
+                                                    .overlay(alignment: .bottom) {
+                                                        TimeRemainingBar(storage: storage, showText: false)
+                                                    }
+                                                    .clipShape(.rect(cornerRadius: 12))
+                                                    .scaleEffect(scale * dismissScale)
+                                                    .offset(CGSize(width: offset.width + dismissOffset.width, height: offset.height + dismissOffset.height))
                                             }
                                         }
                                         
@@ -157,6 +153,8 @@ struct DetailView: View {
                                     }
                                     .id(storage.id)
                                     .containerRelativeFrame(.horizontal)
+                                    .frame(maxHeight: .infinity)
+                                    .contentShape(Rectangle())
                                     .simultaneousGesture(simultaneousGesture())
                                 }
                             }
