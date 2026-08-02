@@ -51,58 +51,78 @@ struct Camera: View {
                         VStack(spacing: 0) {
                             Spacer()
                             if let image = cameraViewModel.previewImage {
-                                image
-                                    .resizable()
-                                    .scaledToFit()
-                                    .clipShape(RoundedRectangle(cornerRadius: 20))
-                                    .padding(.horizontal, 22)
-                                    .padding(.top, 12)
-                                    .overlay(alignment: .topLeading) {
-                                        if showFocusIndicator, let point = focusPoint {
-                                            FocusIndicator()
-                                                .offset(x: point.x - 35, y: point.y - 35)
-                                        }
-                                    }
-                                    .overlay {
-                                        if capturingPhoto {
-                                            Color(.black)
-                                        }
-                                    }
-                                    .gesture(
-                                        MagnificationGesture()
-                                            .onChanged { value in
-                                                let newZoom = currentZoom * value.magnitude
-                                                cameraViewModel.camera.setZoom(newZoom)
+                                ZStack(alignment: .topTrailing) {
+                                    image
+                                        .resizable()
+                                        .scaledToFit()
+                                        .clipShape(RoundedRectangle(cornerRadius: 20))
+                                        .padding(.horizontal, 22)
+                                        .padding(.top, 12)
+                                        .overlay(alignment: .topLeading) {
+                                            if showFocusIndicator, let point = focusPoint {
+                                                FocusIndicator()
+                                                    .offset(x: point.x - 35, y: point.y - 35)
                                             }
-                                            .onEnded { value in
-                                                currentZoom *= value.magnitude
+                                        }
+                                        .overlay {
+                                            if capturingPhoto {
+                                                Color(.black)
                                             }
-                                    )
-                                    .simultaneousGesture(
-                                        DragGesture(minimumDistance: 0)
-                                            .onEnded { value in
-                                                let location = value.location
-                                                let normalizedX = location.x / geometry.size.width
-                                                let normalizedY = location.y / geometry.size.height
-                                                
-                                                let clampedPoint = CGPoint(
-                                                    x: min(max(normalizedX, 0), 1),
-                                                    y: min(max(normalizedY, 0), 1)
-                                                )
-                                                
-                                                focusPoint = location
-                                                withAnimation {
-                                                    showFocusIndicator = true
+                                        }
+                                        .gesture(
+                                            MagnificationGesture()
+                                                .onChanged { value in
+                                                    let newZoom = currentZoom * value.magnitude
+                                                    cameraViewModel.camera.setZoom(newZoom)
                                                 }
-                                                
-                                                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                                                .onEnded { value in
+                                                    currentZoom *= value.magnitude
+                                                }
+                                        )
+                                        .simultaneousGesture(
+                                            DragGesture(minimumDistance: 0)
+                                                .onEnded { value in
+                                                    let location = value.location
+                                                    let normalizedX = location.x / geometry.size.width
+                                                    let normalizedY = location.y / geometry.size.height
+
+                                                    let clampedPoint = CGPoint(
+                                                        x: min(max(normalizedX, 0), 1),
+                                                        y: min(max(normalizedY, 0), 1)
+                                                    )
+
+                                                    focusPoint = location
                                                     withAnimation {
-                                                        showFocusIndicator = false
+                                                        showFocusIndicator = true
                                                     }
+
+                                                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                                                        withAnimation {
+                                                            showFocusIndicator = false
+                                                        }
+                                                    }
+                                                    cameraViewModel.camera.setFocus(at: clampedPoint)
                                                 }
-                                                cameraViewModel.camera.setFocus(at: clampedPoint)
-                                            }
-                                    )
+                                        )
+
+                                    Button {
+                                        cameraViewModel.camera.cycleFlash()
+                                    } label: {
+                                        Image(
+                                            systemName: cameraViewModel.camera.flashMode.iconName
+                                        )
+                                        .font(.system(size: 18))
+                                        .foregroundColor(.white)
+                                        .padding(8)
+                                        .background(
+                                            cameraViewModel.camera.flashMode.rawValue == 2 ? Color.batagorSecondary : Color.batagorDark
+                                                .opacity(0.5)
+                                        )
+                                        .clipShape(Circle())
+                                    }
+                                    .padding(.vertical, 20)
+                                    .padding(.horizontal, 32)
+                                }
                             } else {
                                 ZStack {
                                     Color(.black)
@@ -179,25 +199,7 @@ struct Camera: View {
                     .padding(.leading, 8)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    HStack(alignment: .center) {
-                        Button {
-                            cameraViewModel.camera.cycleFlash()
-                        } label: {
-                            Image(
-                                systemName: cameraViewModel.camera.flashMode.iconName
-                            )
-                            .font(.system(size: 12))
-                            .foregroundColor(.white)
-                            .padding(5)
-                            .background(
-                                cameraViewModel.camera.flashMode.rawValue == 2 ? Color.adaySecondary : Color.white
-                                    .opacity(0.4)
-                            )
-                            .clipShape(Circle())
-                        }
-                        
-                        GalleryCount(currentCount: storages.count, foregroundColor: Color.lightBase, countOnly: true)
-                    }
+                    GalleryCount(currentCount: storages.count, foregroundColor: Color.lightBase, countOnly: true)
                 }
             }
             .ignoresSafeArea(.all)
