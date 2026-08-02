@@ -16,7 +16,7 @@
 
 ## 📋 Project Information
 
-**A Day** is an iOS application designed to help users capture and store temporary photos and videos. Instead of cluttering the system library with temporary media (like recipes, parking spot photos, receipts, or quick references), Batagor stores them in an isolated, shared sandbox with automatic background deletion once their expiry duration has passed.
+**A Day** is an iOS application designed to help users capture and store temporary photos and videos. Instead of cluttering the system library with temporary media (like recipes, parking spot photos, receipts, or quick references), A Day stores them in an isolated, shared sandbox with automatic background deletion once their expiry duration has passed.
 
 ### Key Features
 
@@ -30,7 +30,7 @@
 
 ## ⚙️ Prerequisites
 
-To build and run Batagor, ensure your development environment meets the following requirements:
+To build and run A Day, ensure your development environment meets the following requirements:
 
 - **Operating System**: macOS Sonoma (14.0) or later.
 - **IDE**: Xcode 15.0 or later.
