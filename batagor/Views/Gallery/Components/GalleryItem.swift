@@ -8,16 +8,23 @@
 import SwiftUI
 import CoreLocation
 
-struct GalleryItemView: View {
+struct GalleryItem: View {
     let storage: Storage
     
     @Binding var isSelecting: Bool
     @Binding var isSelected: Bool
     @Binding var isSwiped: Bool
     
+    @Environment(\.modelContext) private var modelContext
+    
     @State private var selectedStorage: Storage?
     @State private var showCover: Bool = false
     @State private var videoDuration: Double?
+    @State private var showDeleteConfirmation: Bool = false
+    @State private var showSaveToast: Bool = false
+    @State private var saveToastMessage: String = ""
+    @State private var saveToastIcon: String = "checkmark.circle"
+    @State private var showPhotoLibraryPermissionAlert: Bool = false
     
     @StateObject private var geocodeManager = GeocodeManager()
     
@@ -37,6 +44,31 @@ struct GalleryItemView: View {
                             selectedStorage = storage
                             showCover = true
                         }
+                    }
+                    .contextMenu {
+                        Button {
+                            saveToPhotos()
+                        } label: {
+                            Label("Save", systemImage: "square.and.arrow.down")
+                        }
+                        
+                        ShareLink(item: storage.mainPath) {
+                            Label("Share", systemImage: "square.and.arrow.up")
+                        }
+                        
+                        Divider()
+                        
+                        Button(role: .destructive) {
+                            showDeleteConfirmation = true
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
+                        
+                    } preview: {
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(height: 450)
                     }
             }
         }
@@ -73,14 +105,13 @@ struct GalleryItemView: View {
                 )
                 .allowsHitTesting(false)
             }
-                
         }
         .overlay(alignment: .bottom) {
             if !isSelecting {
                 TimeRemainingBar(storage: storage)
             }
             
-             if isSelecting && isSelected {
+            if isSelecting && isSelected {
                 ZStack(alignment: .topLeading) {
                     RoundedRectangle(cornerRadius: 12)
                         .strokeBorder(Color.blueBase, lineWidth: 3)
@@ -106,11 +137,54 @@ struct GalleryItemView: View {
                 videoDuration = await TimeFormatter.getVideoDuration(from: storage.mainPath)
             }
         }
+        .customConfirmationDialog(
+            "Don't need this snap anymore?",
+            isPresented: $showDeleteConfirmation,
+            actionTitle: "Delete",
+            actionColor: .redBase,
+            action: {
+                DeletionService.shared.manualDelete(modelContext: modelContext, storage: storage)
+            },
+            message: "This will delete it for good. This action can't be undone."
+        )
+        .toast(isShowing: $showSaveToast, message: saveToastMessage, icon: saveToastIcon)
+        .alert(
+            "Photos Access Required",
+            isPresented: $showPhotoLibraryPermissionAlert
+        ) {
+            Button("Open Settings") {
+                if let settingsURL = URL(
+                    string: UIApplication.openSettingsURLString
+                ) {
+                    UIApplication.shared.open(settingsURL)
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("A Day needs Photos access to save this snap. Please enable it in Settings.")
+        }
+    }
+
+    private func saveToPhotos() {
+        Task {
+            do {
+                try await PhotoLibraryService.shared.save(storage)
+                saveToastIcon = "checkmark.circle"
+                saveToastMessage = "Saved to Photos."
+                showSaveToast = true
+            } catch PhotoLibrarySaveError.permissionDenied {
+                showPhotoLibraryPermissionAlert = true
+            } catch {
+                saveToastIcon = "exclamationmark.triangle"
+                saveToastMessage = error.localizedDescription
+                showSaveToast = true
+            }
+        }
     }
 }
 
 #Preview {
-    GalleryItemView(storage: Storage(
+    GalleryItem(storage: Storage(
         createdAt: Date(),
         expiredAt: 20000,
         mainPath: URL(string: "https://images.unsplash.com/photo-1761405378282-e819a65cb493?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1364")!,

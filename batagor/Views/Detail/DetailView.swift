@@ -44,7 +44,7 @@ struct DetailView: View {
     
     var body: some View {
         GeometryReader { geo in
-            ZStack(alignment: .center) {
+            ZStack(alignment: .top) {
                 LinearGradient(
                     stops: [
                         Gradient.Stop(color: Color.rgb(red: 250, green: 244, blue: 230), location: 0.0),
@@ -115,6 +115,7 @@ struct DetailView: View {
                                         if storage.mainPath.pathExtension == "mp4" {
                                             if selectedThumbnail == storage {
                                                 VideoPlayer(player: player)
+                                                    .frame(maxWidth: .infinity)
                                                     .overlay(alignment: .bottom) {
                                                         TimeRemainingBar(storage: storage, showText: false)
                                                     }
@@ -140,49 +141,20 @@ struct DetailView: View {
                                                     .clipShape(.rect(cornerRadius: 12))
                                                     .scaleEffect(scale * dismissScale)
                                                     .offset(CGSize(width: offset.width + dismissOffset.width, height: offset.height + dismissOffset.height))
-                                                
                                             }
                                         }
                                         
                                         if isShowedDetail {
-                                            Spacer()
-                                            VStack(alignment: .leading) {
-                                                HStack {
-                                                    Text("Come")
-                                                        .font(.spaceGroteskSemiBold(size: 15))
-                                                        .foregroundStyle(Color.darkBase)
-                                                    Text(storage.createdAt.formatted(date: .abbreviated, time: .shortened))
-                                                        .font(.spaceGroteskRegular(size: 15))
-                                                        .foregroundStyle(Color.darkBase)
-                                                }
-                                                
-                                                HStack {
-                                                    Text("Gone")
-                                                        .font(.spaceGroteskSemiBold(size: 15))
-                                                        .foregroundStyle(Color.darkBase)
-                                                    Text(storage.expiredAt.formatted(date: .abbreviated, time: .shortened))
-                                                        .font(.spaceGroteskRegular(size: 15))
-                                                        .foregroundStyle(Color.darkBase)
-                                                }
-                                                
-                                                if let location = storage.locationName,
-                                                   let city = storage.locationCity {
-                                                    Text("\(location), \(city)")
-                                                        .font(.spaceGroteskRegular(size: 15))
-                                                        .foregroundStyle(Color.darkBase)
-                                                    
-                                                    MapThumbnail(storage: storage)
-                                                        .clipShape(.rect(cornerRadius: 12))
-                                                        .containerRelativeFrame(.vertical) { height, _ in
-                                                            height * 0.2
-                                                        }
-                                                }
-                                            }
+                                            DetailInfoCard(storage: storage)
+                                                .padding(.top, 10)
+                                                .transition(.move(edge: .bottom).combined(with: .opacity))
                                         }
-                                        
+
                                     }
                                     .id(storage.id)
                                     .containerRelativeFrame(.horizontal)
+                                    .frame(maxHeight: .infinity)
+                                    .contentShape(Rectangle())
                                     .simultaneousGesture(simultaneousGesture())
                                 }
                             }
@@ -216,18 +188,21 @@ struct DetailView: View {
                     height * 0.98
                 }
                 .padding(.horizontal, 35)
+                .offset(y: geo.size.height * 0.07)
                 
                 if !isShowedDetail {
-                    Knob()
-                        .offset(y: geo.size.height * 0.9)
-                    
-                    CircularScrollView(
-                        storages: storages,
-                        selectedStorage: $selectedStorage,
-                        selectedThumbnail: $selectedThumbnail,
-                        selectedVideo: $selectedVideo,
-                        geo: geo
-                    )
+                    ZStack {
+                        Knob()
+                            .offset(y: geo.size.height * 0.9)
+                        
+                        CircularScrollView(
+                            storages: storages,
+                            selectedStorage: $selectedStorage,
+                            selectedThumbnail: $selectedThumbnail,
+                            selectedVideo: $selectedVideo,
+                            geo: geo
+                        )
+                    }
                 }
             }
             .ignoresSafeArea(.container)
@@ -269,62 +244,62 @@ struct DetailView: View {
             
             DragGesture()
                 .onChanged { value in
-                    //                    if !isShowedDetail {
-                    if !isZoomed {
-                        if abs(value.translation.height) > abs(value.translation.width) {
-                            blockHorizontal = true
-                            if value.translation.height > abs(value.translation.width) {
-                                dismissOffset.height = value.translation.height
-                                let progress = min(abs(value.translation.height) / 200, 1.0)
-                                dismissScale = 1.0 - (progress * 0.5)
+                    if !isShowedDetail {
+                        if !isZoomed {
+                            if abs(value.translation.height) > abs(value.translation.width) {
+                                blockHorizontal = true
+                                if value.translation.height > abs(value.translation.width) {
+                                    dismissOffset.height = value.translation.height
+                                    let progress = min(abs(value.translation.height) / 200, 1.0)
+                                    dismissScale = 1.0 - (progress * 0.5)
+                                }
                             }
+                        } else {
+                            blockHorizontal = true
+                            offset = CGSize(
+                                width: lastOffset.width + value.translation.width,
+                                height: lastOffset.height + value.translation.height
+                            )
                         }
                     } else {
-                        blockHorizontal = true
-                        offset = CGSize(
-                            width: lastOffset.width + value.translation.width,
-                            height: lastOffset.height + value.translation.height
-                        )
+                        if abs(value.translation.height) > abs(value.translation.width) {
+                            blockHorizontal = true
+                        }
                     }
-                    //                    } else {
-                    //                        if abs(value.translation.height) > abs(value.translation.width) {
-                    //                            blockHorizontal = true
-                    //                        }
-                    //                    }
                 }
                 .onEnded { value in
                     lastOffset = offset
                     
-                    //                    if !isShowedDetail {
-                    if !isZoomed {
-                        if value.translation.height > 150 {
+                    if !isShowedDetail {
+                        if !isZoomed {
+                            if value.translation.height > 150 {
+                                withAnimation(.easeOut(duration: 0.3)) {
+                                    dismissOffset = CGSize(width: 0, height: value.translation.height > 0 ? 1000 : -1000)
+                                    dismissScale = 0
+                                }
+                                
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                    showCover = false
+                                }
+                            } else if value.translation.height < -50 {
+                                withAnimation(.easeOut(duration: 0.3)) {
+                                    isShowedDetail = true
+                                }
+                            } else {
+                                withAnimation(.spring()) {
+                                    dismissOffset = .zero
+                                    dismissScale = 1.0
+                                }
+                            }
+                        }
+                    } else {
+                        if value.translation.height > value.translation.width &&
+                            value.translation.height > 50 {
                             withAnimation(.easeOut(duration: 0.3)) {
-                                dismissOffset = CGSize(width: 0, height: value.translation.height > 0 ? 1000 : -1000)
-                                dismissScale = 0
-                            }
-                            
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                showCover = false
-                            }
-//                        } else if value.translation.height < -50 {
-//                            withAnimation(.bouncy) {
-//                                isShowedDetail = true
-//                            }
-                        } else {
-                            withAnimation(.spring()) {
-                                dismissOffset = .zero
-                                dismissScale = 1.0
+                                isShowedDetail = false
                             }
                         }
                     }
-                    //                    } else {
-                    //                        if value.translation.height > value.translation.width &&
-                    //                            value.translation.height > 50 {
-                    //                            withAnimation(.bouncy) {
-                    //                                isShowedDetail = false
-                    //                            }
-                    //                        }
-                    //                    }
                     
                     blockHorizontal = false
                 }
@@ -339,4 +314,5 @@ struct DetailView: View {
             thumbnailPath: URL(string: "https://example.com")!
         )
     ), showCover: .constant(true))
+    .environmentObject(TimerManager.shared)
 }
