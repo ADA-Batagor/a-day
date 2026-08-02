@@ -1,0 +1,10 @@
+{
+  "theme": {
+    "color": {
+      "link": {
+        "light": "#1C1C1C",
+        "dark": "#A7CBFF"
+      }
+    }
+  }
+}

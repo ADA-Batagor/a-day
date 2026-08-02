@@ -9,13 +9,19 @@ import Foundation
 import CoreLocation
 import MapKit
 
+/// Turns a coordinate into a human-readable ``PlacemarkInfo`` via `CLGeocoder`.
+///
+/// One instance is owned per `CameraViewModel` for its whole lifetime; call
+/// ``reset()`` after consuming ``placemarkInfo`` so state doesn't leak into the
+/// next capture. See <doc:LocationAndGeocoding>.
 @MainActor
 class GeocodeManager: ObservableObject {
     @Published var placemarkInfo: PlacemarkInfo?
     @Published var isLoading: Bool = false
-    
+
     private let maxSearchDistance: CLLocationDistance = 50
-    
+
+    /// Reverse-geocodes `coordinate` and publishes the result to ``placemarkInfo``.
     func reverseGeocode(coordinate: CLLocationCoordinate2D) async {
         isLoading = true
         defer { isLoading = false }
@@ -116,6 +122,8 @@ class GeocodeManager: ObservableObject {
         return fromLocation.distance(from: toLocation)
     }
     
+    /// Clears ``placemarkInfo`` and ``isLoading``. Call after each capture so a
+    /// stale place name from a previous save can't leak into the next one.
     func reset() {
         placemarkInfo = nil
         isLoading = false

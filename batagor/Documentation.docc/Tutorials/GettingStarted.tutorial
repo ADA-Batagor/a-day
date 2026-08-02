@@ -1,0 +1,128 @@
+@Tutorial(time: 15) {
+    @Intro(title: "Set Up and Make Your First Change") {
+        Clone the project, get it running on a device, and ship one small, real
+        change to the gallery UI — the fastest way to confirm your environment
+        works end to end before picking up a real issue.
+    }
+
+    @Section(title: "Clone and open the project") {
+        @ContentAndMedia {
+            Get the repository onto your machine and open it in Xcode 15+.
+        }
+
+        @Steps {
+            @Step {
+                Clone the repository and open `batagor.xcodeproj`.
+
+                @Code(file: "GettingStarted-01-01.sh", name: "Terminal") { }
+            }
+
+            @Step {
+                Select the **batagor** scheme and pick a simulator, or a connected
+                iOS 18+ device, as the run destination.
+            }
+        }
+    }
+
+    @Section(title: "Configure signing and App Groups") {
+        @ContentAndMedia {
+            The app and widget share media through an App Group, so both targets
+            need a valid signing team **and** matching bundle/group identifiers
+            before they'll run on a physical device — the simulator works without
+            this step. `MainAppBundleIdentifier` and `GroupAppBundleIdentifier` in
+            `Info.plist` are plain strings the code reads at runtime, so picking a
+            Team in Xcode alone isn't enough — `scripts/local-bundle-id.sh`
+            automates rewriting them for both targets in one shot.
+        }
+
+        @Steps {
+            @Step {
+                From the repo root, run the script with a suffix unique to you
+                (e.g. your own name) — this rewrites the bundle identifier and App
+                Group in both `Info.plist` files and `project.pbxproj` together.
+
+                @Code(file: "GettingStarted-02-01.sh", name: "Terminal") { }
+            }
+
+            @Step {
+                Select the root **batagor** project in the Navigator, choose the
+                **batagor** target, open **Signing & Capabilities**, and pick your
+                own **Team** — the bundle identifier is already unique from the
+                previous step, so this just resolves the provisioning profile.
+            }
+
+            @Step {
+                In the same tab, under **App Groups**, add/select the group the
+                script just wrote (`group.com.tudemaha.<your suffix>`) — the
+                capability entry and the plist string must match exactly.
+            }
+
+            @Step {
+                Repeat the Team and App Groups steps for the **widgetExtension**
+                target — its `Info.plist` and bundle identifier were already
+                updated by the script, so only the Xcode signing UI is left. A
+                mismatch here is the most common reason `ModelContainerService`
+                fails with "Shared app group container not found" on a physical
+                device.
+            }
+
+            @Step {
+                Run `git config core.hooksPath .githooks` once so future
+                `git pull`s automatically re-apply your suffix instead of quietly
+                reverting to the team default. See `CONTRIBUTING.md` for the full
+                rundown of `local-bundle-id.sh`'s other commands.
+            }
+        }
+    }
+
+    @Section(title: "Run the app") {
+        @ContentAndMedia {
+            Build and run, then confirm the whole capture → save → widget loop
+            works before touching any code.
+        }
+
+        @Steps {
+            @Step {
+                Build and run (⌘R). Grant camera, microphone, and location
+                permissions when prompted.
+            }
+
+            @Step {
+                Take a photo, confirm it shows up in the gallery, then add the
+                **Capture Snaps** widget to your Home Screen and confirm its count
+                updates.
+            }
+        }
+    }
+
+    @Section(title: "Make a small, real change") {
+        @ContentAndMedia {
+            ``GalleryCount`` (`Views/Shared/GalleryCount.swift`) renders the
+            "x / 24 Snaps" label under the gallery grid — small enough to safely
+            practice a first edit on.
+        }
+
+        @Steps {
+            @Step {
+                Open `Views/Shared/GalleryCount.swift` and find the `Text` view
+                that builds the count label.
+
+                @Code(file: "GettingStarted-04-01.swift", name: "GalleryCount.swift") { }
+            }
+
+            @Step {
+                Change the trailing word from "Snaps" to "Moments" and re-run. The
+                gallery header should now read "x / 24 Moments".
+
+                @Code(file: "GettingStarted-04-02.swift", name: "GalleryCount.swift") { }
+            }
+
+            @Step {
+                You've now touched the build, the signing setup, the running app,
+                and the source — you're ready to pick up a real BAT- issue. See
+                <doc:Architecture> for how this one small view fits into the rest
+                of the app.
+            }
+        }
+    }
+}

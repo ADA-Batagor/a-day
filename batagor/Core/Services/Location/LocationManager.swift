@@ -11,29 +11,38 @@ import ImageIO
 import UIKit
 import AVFoundation
 
+/// Wraps `CLLocationManager` and embeds captured coordinates into finished media.
+///
+/// Publishes the latest fix as ``currentLocation``; does not itself decide when a
+/// coordinate gets attached to a `Storage` record — see <doc:LocationAndGeocoding>
+/// for how ``CameraViewModel`` uses this alongside ``GeocodeManager``.
 class LocationManager: NSObject, ObservableObject {
     private let manager = CLLocationManager()
     @Published var currentLocation: CLLocation?
     @Published var authorizationStatus: CLAuthorizationStatus = .notDetermined
-    
+
     override init() {
         super.init()
         manager.delegate = self
         manager.desiredAccuracy = kCLLocationAccuracyBest
     }
-    
+
+    /// Requests when-in-use location authorization from the user.
     func requestPermission() {
         manager.requestWhenInUseAuthorization()
     }
-    
+
     func startUpdatingLocation() {
         manager.startUpdatingLocation()
     }
-    
+
     func stopUpdatingLocation() {
         manager.stopUpdatingLocation()
     }
-    
+
+    /// Returns a copy of `image` with `location` embedded as EXIF GPS metadata.
+    /// Not currently called anywhere — photos store their coordinate on the
+    /// `Storage` record instead (see <doc:LocationAndGeocoding>).
     func addLocationToImage(_ image: UIImage, location: CLLocation?) -> UIImage {
         guard let location = location,
               let imageData = image.jpegData(compressionQuality: 1.0),
@@ -71,6 +80,9 @@ class LocationManager: NSObject, ObservableObject {
         return image
     }
     
+    /// Exports the movie at `url` with `location` embedded as QuickTime location
+    /// metadata, replacing the original file in place. Used by
+    /// `CameraViewModel.handleSaveMovie(context:)`.
     func addLocationToVideo(at url: URL, location: CLLocation?) {
         guard let location = location else { return }
         

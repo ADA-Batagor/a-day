@@ -10,12 +10,16 @@ import CoreMotion
 import UIKit
 import AVFoundation
 
+/// Derives device orientation from `CoreMotion` gravity vectors rather than
+/// `UIDevice.orientation`, so it keeps working with the device lying flat (the
+/// camera UI's main use case). Independent of `AVCaptureDevice.RotationCoordinator`,
+/// which `CameraManager` uses separately for capture-buffer rotation.
 class OrientationManager: ObservableObject {
     static let shared = OrientationManager()
-    
+
     @Published var orientation: UIDeviceOrientation = .portrait
     @Published var rotation: Double = 0.0
-    
+
     private let motionManager = CMMotionManager()
     
     init() {

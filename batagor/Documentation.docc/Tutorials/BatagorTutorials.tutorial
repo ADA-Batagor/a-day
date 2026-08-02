@@ -1,0 +1,14 @@
+@Tutorials(name: "batagor") {
+    @Intro(title: "Getting Started with batagor") {
+        A short, hands-on walkthrough for new contributors: clone the project, get
+        it running on a device, and make one real change. For everything else —
+        architecture, subsystems, symbol reference — see the main
+        <doc:Documentation> catalog.
+    }
+
+    @Chapter(name: "Onboarding") {
+        Set up the project and ship a first small change.
+
+        @TutorialReference(tutorial: "doc:GettingStarted")
+    }
+}
