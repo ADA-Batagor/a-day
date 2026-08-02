@@ -29,6 +29,14 @@ struct CameraToolbar: View {
     var movieDurationLimit = 5.0
     var lineWidth: CGFloat = 4.0
     
+    var disabledState: Bool {
+        storageCount >= 24
+        || cameraViewModel.isCameraInterrupted
+        || cameraViewModel.showInterruptionAlert
+        || cameraViewModel.showCameraPermissionAlert
+        || cameraViewModel.showMicrophonePermissionAlert
+    }
+    
     var body: some View {
         HStack {
             Button {
@@ -138,7 +146,7 @@ struct CameraToolbar: View {
                 
             }
             .frame(height: 75)
-            .disabled(storageCount >= 24 || cameraViewModel.isCameraInterrupted)
+            .disabled(disabledState)
             
             Spacer()
             
@@ -157,6 +165,7 @@ struct CameraToolbar: View {
             .padding(15)
             .background(Color.lightBase.opacity(0.2))
             .clipShape(Circle())
+            .disabled(disabledState)
         }
         .onAppear {
             withAnimation {

@@ -54,20 +54,20 @@ struct Camera: View {
                                 image
                                     .resizable()
                                     .scaledToFit()
-                                    .overlay {
-                                        if capturingPhoto {
-                                            Color(.black)
-                                        }
-                                    }
                                     .clipShape(RoundedRectangle(cornerRadius: 20))
+                                    .padding(.horizontal, 22)
+                                    .padding(.top, 12)
                                     .overlay(alignment: .topLeading) {
                                         if showFocusIndicator, let point = focusPoint {
                                             FocusIndicator()
                                                 .offset(x: point.x - 35, y: point.y - 35)
                                         }
                                     }
-                                    .padding(.horizontal, 22)
-                                    .padding(.top, 12)
+                                    .overlay {
+                                        if capturingPhoto {
+                                            Color(.black)
+                                        }
+                                    }
                                     .gesture(
                                         MagnificationGesture()
                                             .onChanged { value in
@@ -103,26 +103,42 @@ struct Camera: View {
                                                 cameraViewModel.camera.setFocus(at: clampedPoint)
                                             }
                                     )
-                            }
-                            if cameraViewModel.camera.isRunning && !cameraViewModel.camera.isPreviewPaused {
-                                CameraToolbar(
-                                    cameraViewModel: cameraViewModel,
-                                    storageCount: storages.count,
-                                    latestStorage: storages.last,
-                                    currentDuration: $currentDuration,
-                                    isRecording: $isRecording,
-                                    capturingPhoto: $capturingPhoto
-                                )
-                                .containerRelativeFrame(.vertical) { height, _ in
-                                    height * 0.15
+                            } else {
+                                ZStack {
+                                    Color(.black)
+                                    
+                                    if cameraViewModel.showCameraPermissionAlert {
+                                        FullScreenAlert(
+                                            iconName: "camera",
+                                            title: "Allow A Day to access your camera and microphone",
+                                            message: "This lets you share photos, record videos and preview effects.",
+                                            buttonText: "Open Settings",
+                                            buttonActionURL: UIApplication.openSettingsURLString
+                                        )
+                                    }
                                 }
-                                .padding(.horizontal, 40)
-                                .padding(.bottom, 30)
+                                .aspectRatio(9/16, contentMode: .fit)
+                                .clipShape(RoundedRectangle(cornerRadius: 20))
+                                .padding(.horizontal, 22)
+                                .padding(.top, 12)
                             }
+                            CameraToolbar(
+                                cameraViewModel: cameraViewModel,
+                                storageCount: storages.count,
+                                latestStorage: storages.last,
+                                currentDuration: $currentDuration,
+                                isRecording: $isRecording,
+                                capturingPhoto: $capturingPhoto
+                            )
+                            .containerRelativeFrame(.vertical) { height, _ in
+                                height * 0.15
+                            }
+                            .padding(.horizontal, 40)
+                            .padding(.bottom, 30)
                         }
                         .safeAreaPadding(.top)
                         
-
+                        
                     }
                     if showStorageLimitAlert {
                         Color.black.opacity(0.4)
@@ -188,21 +204,6 @@ struct Camera: View {
         }
         .task {
             await cameraViewModel.startCamera()
-        }
-        .alert(
-            "Camera Access Required",
-            isPresented: $cameraViewModel.showCameraPermissionAlert
-        ) {
-            Button("Open Settings") {
-                if let settingsURL = URL(
-                    string: UIApplication.openSettingsURLString
-                ) {
-                    UIApplication.shared.open(settingsURL)
-                }
-            }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("A Day needs camera access to take photos and record videos. Please enable it in Settings.")
         }
         .alert(
             "Microphone Access Required",
