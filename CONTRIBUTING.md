@@ -4,31 +4,35 @@
 
 The app and widget share media through an App Group, which is tied to a signing
 team — so to run on a physical device, everyone needs their **own** bundle
-identifier and App Group, not the team default (`com.tudemaha.lawar`) checked into
-`project.pbxproj`/`Info.plist`. Editing those by hand every time you pull gets old
-fast, so there's a script for it:
+identifier, App Group, and Team, not the team default (`com.tudemaha.lawar`,
+team `HRYT2ZQSJ5`). `PRODUCT_BUNDLE_IDENTIFIER`, the App Group entitlement, and
+`DEVELOPMENT_TEAM` all resolve from a `BUNDLE_ID_SUFFIX`/`DEVELOPMENT_TEAM` build
+setting defined in `Config/Shared.xcconfig`, which in turn optionally includes a
+gitignored `Config/Local.xcconfig` — so your personal values live in one local
+file that's never committed, instead of being hand-edited into
+`project.pbxproj`/`Info.plist`/`.entitlements` on every pull:
 
 ```bash
-git config core.hooksPath .githooks   # one-time, lets pulls auto-reapply your ID
-./scripts/local-bundle-id.sh set <your-suffix>   # e.g. `set gorengan`
+cp Config/Local.xcconfig.template Config/Local.xcconfig
 ```
 
-That rewrites `PRODUCT_BUNDLE_IDENTIFIER` and the `MainAppBundleIdentifier`/
-`GroupAppBundleIdentifier` plist keys in both targets to `com.tudemaha.<your-suffix>`
-/ `group.com.tudemaha.<your-suffix>`, and stores your suffix in `.local-bundle-id`
-(gitignored — never shared or committed). From then on, `.githooks/post-merge` and
-`.githooks/post-checkout` automatically re-apply it after every pull or branch
-switch, so the team-default identifiers never silently overwrite your local setup
-again.
+Then fill in your own values in `Config/Local.xcconfig`:
 
-You still need to separately pick your own **Team** and matching **App Groups**
-capability entry in Xcode's Signing & Capabilities for both targets — the script
-only handles the string values, not the actual Xcode signing configuration. See the
-in-app tutorial (`Documentation.docc/Tutorials`) for the full walkthrough.
+```
+BUNDLE_ID_SUFFIX = gorengan
+DEVELOPMENT_TEAM = YOURTEAMID
+```
 
-Other commands: `./scripts/local-bundle-id.sh status` (see current/stored suffix),
-`./scripts/local-bundle-id.sh reset` (restore the team default — do this before
-committing if you're ever unsure your working tree has your personal ID in it).
+That's it — no script to re-run, no git hooks to configure, nothing to reset
+before committing. `Config/Local.xcconfig` is gitignored, so it survives pulls
+and branch switches untouched, and there's no tracked file your personal ID
+could accidentally end up in.
+
+You still need to separately add the matching **App Groups** capability entry
+in Xcode's Signing & Capabilities for both targets (`group.com.tudemaha.<your-suffix>`)
+— that part registers against your own Apple Developer account and can't be
+scripted. See the in-app tutorial (`Documentation.docc/Tutorials`) for the full
+walkthrough.
 
 ## Branching Strategy
 
