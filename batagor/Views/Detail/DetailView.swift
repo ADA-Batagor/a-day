@@ -46,6 +46,20 @@ struct DetailView: View {
         allStorages.filter { $0.expiredAt > Date() }
     }
     
+    @Namespace var toolbarNamespace
+
+    private var toolbarIconFont: Font {
+        if #available(iOS 26, *) {
+            .spaceGroteskSemiBold(size: 18)
+        } else {
+            .spaceGroteskSemiBold(size: 22)
+        }
+    }
+
+    private var toolbarSpacing: CGFloat? {
+        if #available(iOS 26, *) { nil } else { 25 }
+    }
+
     var body: some View {
         GeometryReader { geo in
             ZStack(alignment: .top) {
@@ -58,78 +72,28 @@ struct DetailView: View {
                     endPoint: .bottom
                 )
                 
-                VStack(alignment: .leading, spacing: 15) {
-                    HStack {
+                VStack(alignment: .leading) {
+                    HStack(alignment: .center) {
+                        Button {
+                            showCover = false
+                        } label: {
+                            Image(systemName: "chevron.left")
+                                .font(.spaceGroteskSemiBold(size: 22))
+                                .foregroundStyle(Color.darkBase)
+                        }
+                        .toolbarGlass()
+
+                        Spacer()
+
                         if #available(iOS 26, *) {
-                            Button {
-                                showCover = false
-                            } label: {
-                                Image(systemName: "chevron.left")
-                                    .font(.spaceGroteskSemiBold(size: 22))
-                                    .foregroundStyle(Color.darkBase)
+                            GlassEffectContainer {
+                                toolbarActions
                             }
                         } else {
-                            Button {
-                                showCover = false
-                            } label: {
-                                Image(systemName: "chevron.left")
-                                    .font(.spaceGroteskSemiBold(size: 22))
-                                    .foregroundStyle(Color.darkBase)
-                            }
-                        }
-                        
-                        
-                        Spacer()
-                        
-                        HStack(alignment: .center, spacing: 25) {
-                            if previousPage == .camera {
-                                Button {
-                                    showCover = false
-                                    NavigationManager.shared.navigate(to: .gallery)
-                                } label: {
-                                    Text("All Media")
-                                        .font(.spaceGroteskSemiBold(size: 18))
-                                        .foregroundStyle(Color.darkBase)
-                                }
-                            }
-                            
-                            if let selectedStorage = selectedStorage {
-                                Button {
-                                    saveToPhotos(selectedStorage)
-                                } label: {
-                                    Image(systemName: "square.and.arrow.down")
-                                        .font(.spaceGroteskSemiBold(size: 22))
-                                        .foregroundStyle(Color.darkBase)
-                                }
-                                
-                                
-                                ShareLink(item: selectedStorage.mainPath) {
-                                    Image(systemName: "square.and.arrow.up")
-                                        .font(.spaceGroteskSemiBold(size: 22))
-                                        .foregroundStyle(Color.darkBase)
-                                }
-                                
-                                Button {
-                                    showDeleteConfirmation = true
-                                } label: {
-                                    Image(systemName: "trash")
-                                        .font(.spaceGroteskSemiBold(size: 22))
-                                        .foregroundStyle(Color.darkBase)
-                                }
-                                .customConfirmationDialog(
-                                    "Don't need this snap anymore?",
-                                    isPresented: $showDeleteConfirmation,
-                                    actionTitle: "Delete",
-                                    actionColor: .redBase,
-                                    action: {
-                                        DeletionService.shared.manualDelete(modelContext: modelContext, storage: selectedStorage)
-                                    },
-                                    cancel: {},
-                                    message:"This will delete it for good. This action can't be undone."
-                                )
-                            }
+                            toolbarActions
                         }
                     }
+                    .padding(.top, 2)
                     
                     ScrollViewReader { proxy in
                         ScrollView(.horizontal, showsIndicators: false) {
@@ -346,6 +310,61 @@ struct DetailView: View {
         )
     }
     
+    @ViewBuilder
+    private var toolbarActions: some View {
+        HStack(alignment: .center, spacing: toolbarSpacing) {
+            if previousPage == .camera {
+                Button {
+                    showCover = false
+                    NavigationManager.shared.navigate(to: .gallery)
+                } label: {
+                    Text("All Media")
+                        .font(.spaceGroteskSemiBold(size: 18))
+                        .foregroundStyle(Color.darkBase)
+                }
+                .toolbarGlass()
+            }
+
+            if let selectedStorage = selectedStorage {
+                Button {
+                    saveToPhotos(selectedStorage)
+                } label: {
+                    Image(systemName: "square.and.arrow.down")
+                        .font(toolbarIconFont)
+                        .foregroundStyle(Color.darkBase)
+                }
+                .toolbarGlassUnion(toolbarNamespace)
+
+                ShareLink(item: selectedStorage.mainPath) {
+                    Image(systemName: "square.and.arrow.up")
+                        .font(toolbarIconFont)
+                        .foregroundStyle(Color.darkBase)
+                }
+                .toolbarGlassUnion(toolbarNamespace)
+
+                Button {
+                    showDeleteConfirmation = true
+                } label: {
+                    Image(systemName: "trash")
+                        .font(toolbarIconFont)
+                        .foregroundStyle(Color.darkBase)
+                }
+                .toolbarGlassUnion(toolbarNamespace)
+                .customConfirmationDialog(
+                    "Don't need this snap anymore?",
+                    isPresented: $showDeleteConfirmation,
+                    actionTitle: "Delete",
+                    actionColor: .redBase,
+                    action: {
+                        DeletionService.shared.manualDelete(modelContext: modelContext, storage: selectedStorage)
+                    },
+                    cancel: {},
+                    message: "This will delete it for good. This action can't be undone."
+                )
+            }
+        }
+    }
+
     private func saveToPhotos(_ selectedStorage: Storage) {
         Task {
             do {
@@ -361,6 +380,40 @@ struct DetailView: View {
                 showSaveToast = true
             }
         }
+    }
+}
+
+private struct GlassButtonIfAvailable: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 26, *) {
+            content.buttonStyle(.glass)
+        } else {
+            content
+        }
+    }
+}
+
+private struct GlassUnionButtonIfAvailable: ViewModifier {
+    var namespace: Namespace.ID
+
+    func body(content: Content) -> some View {
+        if #available(iOS 26, *) {
+            content
+                .buttonStyle(.glass)
+                .glassEffectUnion(id: "toolbar", namespace: namespace)
+        } else {
+            content
+        }
+    }
+}
+
+private extension View {
+    func toolbarGlass() -> some View {
+        self.modifier(GlassButtonIfAvailable())
+    }
+
+    func toolbarGlassUnion(_ namespace: Namespace.ID) -> some View {
+        self.modifier(GlassUnionButtonIfAvailable(namespace: namespace))
     }
 }
 
