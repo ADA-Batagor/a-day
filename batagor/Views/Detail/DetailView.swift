@@ -21,6 +21,10 @@ struct DetailView: View {
     @State private var showDeleteConfirmation: Bool = false
     @State private var selectedThumbnail: Storage?
     @State private var selectedVideo: Storage?
+    @State private var showSaveToast: Bool = false
+    @State private var saveToastMessage: String = ""
+    @State private var saveToastIcon: String = "checkmark.circle"
+    @State private var showPhotoLibraryPermissionAlert: Bool = false
     
     //    gesture state
     @State private var offset: CGSize = .zero
@@ -79,6 +83,15 @@ struct DetailView: View {
                             }
                             
                             if let selectedStorage = selectedStorage {
+                                Button {
+                                    saveToPhotos(selectedStorage)
+                                } label: {
+                                    Image(systemName: "square.and.arrow.down")
+                                        .font(.spaceGroteskSemiBold(size: 22))
+                                        .foregroundStyle(Color.darkBase)
+                                }
+                                
+                                
                                 ShareLink(item: selectedStorage.mainPath) {
                                     Image(systemName: "square.and.arrow.up")
                                         .font(.spaceGroteskSemiBold(size: 22))
@@ -156,6 +169,7 @@ struct DetailView: View {
                                     .frame(maxHeight: .infinity)
                                     .contentShape(Rectangle())
                                     .simultaneousGesture(simultaneousGesture())
+                                    .toast(isShowing: $showSaveToast, message: saveToastMessage, icon: saveToastIcon)
                                 }
                             }
                             .scrollTargetLayout()
@@ -211,6 +225,21 @@ struct DetailView: View {
             if let selectedStorage = selectedStorage {
                 RemainingTime(storage: selectedStorage, variant: .large)
             }
+        }
+        .alert(
+            "Photos Access Required",
+            isPresented: $showPhotoLibraryPermissionAlert
+        ) {
+            Button("Open Settings") {
+                if let settingsURL = URL(
+                    string: UIApplication.openSettingsURLString
+                ) {
+                    UIApplication.shared.open(settingsURL)
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("A Day needs Photos access to save this snap. Please enable it in Settings.")
         }
     }
     
@@ -304,6 +333,23 @@ struct DetailView: View {
                     blockHorizontal = false
                 }
         )
+    }
+    
+    private func saveToPhotos(_ selectedStorage: Storage) {
+        Task {
+            do {
+                try await PhotoLibraryService.shared.save(selectedStorage)
+                saveToastIcon = "checkmark.circle"
+                saveToastMessage = "Saved to Photos."
+                showSaveToast = true
+            } catch PhotoLibrarySaveError.permissionDenied {
+                showPhotoLibraryPermissionAlert = true
+            } catch {
+                saveToastIcon = "exclamationmark.triangle"
+                saveToastMessage = error.localizedDescription
+                showSaveToast = true
+            }
+        }
     }
 }
 
