@@ -1,0 +1,14 @@
+// Personal signing overrides — copy this file to Local.xcconfig (gitignored,
+// never shared or committed) and fill in your own values so you can build on
+// a physical device without touching project.pbxproj:
+//
+//   cp Config/Local.xcconfig.template Config/Local.xcconfig
+//
+// Uncomment and fill in both lines below, then in Xcode's Signing &
+// Capabilities (both the batagor and widgetExtension targets) add/select the
+// App Groups entry that matches your suffix
+// (group.com.tudemaha.<your-suffix>) — that part still has to be done in
+// Xcode since it registers against your own Apple Developer account.
+
+// BUNDLE_ID_SUFFIX = yoursuffix
+// DEVELOPMENT_TEAM = YOURTEAMID

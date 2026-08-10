@@ -1,0 +1,8 @@
+// Team-default signing values. A developer's own values in the gitignored
+// Local.xcconfig (see Local.xcconfig.template) override these — see
+// CONTRIBUTING.md for the full local setup workflow.
+
+BUNDLE_ID_SUFFIX = lawar
+DEVELOPMENT_TEAM = HRYT2ZQSJ5
+
+#include? "Local.xcconfig"
