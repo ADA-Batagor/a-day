@@ -317,10 +317,6 @@ class CameraManager: NSObject, ObservableObject, @unchecked Sendable {
                     DispatchQueue.main.async {
                         self.interruptionMessage = "Camera unavailable"
                     }
-                case .sensitiveContentMitigationActivated:
-                    DispatchQueue.main.async {
-                        self.interruptionMessage = "Camera unavailable due to sensitive content restrictions"
-                    }
                 @unknown default:
                     DispatchQueue.main.async {
                         self.interruptionMessage = "Camera session was interrupted"
