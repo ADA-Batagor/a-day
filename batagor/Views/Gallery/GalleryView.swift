@@ -166,36 +166,61 @@ struct GalleryView: View {
             .background(Color.lightBase)
             .navigationBarTitleDisplayMode(shouldShowScrolledState ? .inline : .large)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    VStack(alignment: .leading, spacing: 0) {
-                        if !shouldShowScrolledState {
-                            Text("Today")
-                                .font(.spaceGroteskBold(size: 34))
-                                .foregroundStyle(Color.darkerBlueBase)
-                                .transition(.opacity.combined(with: .move(edge: .top)))
-                        }
-                        
-                        GalleryCount(currentCount: photos.count)
+                // iOS 26 wraps ToolbarItem content in an auto-sized Liquid Glass
+                // background by default, which clips this taller title+count block
+                // down to a small pill. `.sharedBackgroundVisibility(.hidden)` opts
+                // it out of that grouping so it renders at full size, as documented at
+                // https://iifx.dev/en/articles/457777731/bypassing-the-liquid-glass-left-aligned-toolbar-text-in-swiftui-ios-26
+                if #available(iOS 26.0, *) {
+                    ToolbarItem(placement: .topBarLeading) {
+                        titleToolbarContent
                     }
-                    .padding(.top, shouldShowScrolledState ? 0 : 70)
-                    .animation(.easeInOut(duration: 0.2), value: shouldShowScrolledState)
+                    .sharedBackgroundVisibility(.hidden)
+                } else {
+                    ToolbarItem(placement: .topBarLeading) {
+                        titleToolbarContent
+                    }
                 }
-                
+
+                // One item holding both buttons, with `.sharedBackgroundVisibility(.hidden)`
+                // so iOS 26 doesn't glass the whole group — only each button's own
+                // explicit .glassEffect renders, keeping them visually separate.
+                // Explicit trailing padding gives exact control over the edge margin
+                // instead of relying on the system's default toolbar inset.
                 if !photos.isEmpty {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        VStack {
-                            SelectButton(
-                                isSelectionMode: $isSelectionMode,
-                                selectedMediaIds: $selectedMediaIds,
-                                swipedPhotoId: $swipedPhotoId
-                            )
+                    if #available(iOS 26.0, *) {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            HStack(spacing: 8) {
+                                CircleButton(icon: "gear") // placeholder — Settings screen wired up separately
+                                SelectButton(
+                                    isSelectionMode: $isSelectionMode,
+                                    selectedMediaIds: $selectedMediaIds,
+                                    swipedPhotoId: $swipedPhotoId
+                                )
+                            }
+                            .padding(.top, shouldShowScrolledState ? 0 : 8)
+                            .padding(.trailing, -20) // compensates the system's own ~36pt toolbar trailing inset to land at 16pt
+                            .frame(maxHeight: .infinity, alignment: .top)
+                            .animation(.easeInOut(duration: 0.2), value: shouldShowScrolledState)
                         }
-                        .padding(.top, shouldShowScrolledState ? 0 : 25)
-                        .contentShape(Rectangle())
-                        .animation(.easeInOut(duration: 0.2), value: shouldShowScrolledState)
+                        .sharedBackgroundVisibility(.hidden)
+                    } else {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            HStack {
+                                CircleButton(icon: "gear")
+                                SelectButton(
+                                    isSelectionMode: $isSelectionMode,
+                                    selectedMediaIds: $selectedMediaIds,
+                                    swipedPhotoId: $swipedPhotoId
+                                )
+                            }
+                            .padding(.top, shouldShowScrolledState ? 0 : 8)
+                            .frame(maxHeight: .infinity, alignment: .top)
+                            .contentShape(Rectangle())
+                            .animation(.easeInOut(duration: 0.2), value: shouldShowScrolledState)
+                        }
                     }
                 }
-                
             }
             .overlay(alignment: .top) {
                 if shouldShowScrolledState {
@@ -282,9 +307,26 @@ struct GalleryView: View {
                 DetailView(selectedStorage: .constant(storage), showCover: $showWidgetDetail)
             }
         }
-        
+
     }
-    
+
+    @ViewBuilder
+    private var titleToolbarContent: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            if !shouldShowScrolledState {
+                Text("Today")
+                    .font(.spaceGroteskBold(size: 34))
+                    .foregroundStyle(Color.darkerBlueBase)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+
+            GalleryCount(currentCount: photos.count)
+        }
+        .padding(.top, shouldShowScrolledState ? 0 : 70)
+        .animation(.easeInOut(duration: 0.2), value: shouldShowScrolledState)
+        .fixedSize()
+    }
+
     private func deleteMedia(_ media: Storage) {
         modelContext.delete(media)
         do {

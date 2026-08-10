@@ -26,15 +26,25 @@ struct CircularSwipeButton: View {
     }
     
     var body: some View {
-        ZStack {
-            Circle()
-                .foregroundStyle(backgroundColor)
-            
-            Image(systemName: icon)
-                .font(.system(size: size * 0.4, weight: .medium))
-                .foregroundStyle(iconColor)
+        Group {
+            if #available(iOS 26.0, *) {
+                Image(systemName: icon)
+                    .font(.system(size: size * 0.4, weight: .medium))
+                    .foregroundStyle(iconColor)
+                    .frame(width: size, height: size)
+                    .glassEffect(.regular.tint(backgroundColor).interactive(), in: .circle)
+            } else {
+                ZStack {
+                    Circle()
+                        .foregroundStyle(backgroundColor)
+
+                    Image(systemName: icon)
+                        .font(.system(size: size * 0.4, weight: .medium))
+                        .foregroundStyle(iconColor)
+                }
+                .frame(width: size, height: size)
+            }
         }
-        .frame(width: size, height: size)
     }
 }
 

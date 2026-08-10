@@ -18,15 +18,24 @@ struct SelectionActionBar: View {
 
             Spacer()
 
-            HStack {
-                Text("\(selectedMediaIds.count) Snaps Selected")
-                    .font(.spaceGroteskSemiBold(size: 17))
-                    .foregroundStyle(Color.darkBase)
+            Group {
+                if #available(iOS 26.0, *) {
+                    Text("\(selectedMediaIds.count) Snaps Selected")
+                        .font(.spaceGroteskSemiBold(size: 17))
+                        .foregroundStyle(Color.darkBase)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 14)
+                        .glassEffect(.regular.tint(Color.accentBase), in: RoundedRectangle(cornerRadius: 20))
+                } else {
+                    Text("\(selectedMediaIds.count) Snaps Selected")
+                        .font(.spaceGroteskSemiBold(size: 17))
+                        .foregroundStyle(Color.darkBase)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 14)
+                        .background(Color.accentBase)
+                        .cornerRadius(20)
+                }
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 14)
-            .background(Color.accentBase)
-            .cornerRadius(20)
 
             Spacer()
 

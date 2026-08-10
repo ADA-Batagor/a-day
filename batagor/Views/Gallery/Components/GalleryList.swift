@@ -65,26 +65,42 @@ struct GalleryList: View {
                 }
 
                 ForEach(photos) { photo in
-                    ZStack(alignment: .trailing) {
-                        if swipedPhotoId == photo.id {
-                            HStack {
-                                Spacer()
-                                Button {
-                                    mediaToDelete = photo
-                                    isDeletingMedia = true
-                                    withAnimation {
-                                        swipeOffsets[photo.id] = 0
-                                        swipedPhotoId = nil
-                                    }
-                                } label: {
-                                    CircularSwipeButton(icon: "trash")
-                                }
-                                .padding(.trailing, 20)
-                                .scaleEffect(swipedPhotoId == photo.id ? 1.0 : 0.0)
-                                .opacity(swipedPhotoId == photo.id ? 1.0 : 0.0)
-                            }
-                            .animation(.interpolatingSpring(stiffness: 300, damping: 15).delay(0.1), value: swipedPhotoId)
+                    // Kept permanently mounted (visibility driven only by scale/opacity/
+                    // hit-testing) instead of behind `if swipedPhotoId == photo.id`. A
+                    // lone .glassEffect view flashes on the frame it's first inserted
+                    // into the hierarchy while its backdrop sampling initializes —
+                    // structurally mounting it fresh on every swipe reveal was exactly
+                    // that moment. Staying mounted means that init cost happens once,
+                    // off-screen, and reveals are pure animated scale/opacity.
+                    let deleteButton = Button {
+                        mediaToDelete = photo
+                        isDeletingMedia = true
+                        withAnimation {
+                            swipeOffsets[photo.id] = 0
+                            swipedPhotoId = nil
                         }
+                    } label: {
+                        CircularSwipeButton(icon: "trash")
+                    }
+
+                    ZStack(alignment: .trailing) {
+                        HStack {
+                            Spacer()
+                            Group {
+                                if #available(iOS 26.0, *) {
+                                    GlassEffectContainer {
+                                        deleteButton
+                                    }
+                                } else {
+                                    deleteButton
+                                }
+                            }
+                            .padding(.trailing, 20)
+                            .scaleEffect(swipedPhotoId == photo.id ? 1.0 : 0.0)
+                            .opacity(swipedPhotoId == photo.id ? 1.0 : 0.0)
+                            .allowsHitTesting(swipedPhotoId == photo.id)
+                        }
+                        .animation(.interpolatingSpring(stiffness: 300, damping: 15).delay(0.1), value: swipedPhotoId)
 
                         GalleryItem(
                             storage: photo,
