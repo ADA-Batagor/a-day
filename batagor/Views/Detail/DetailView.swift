@@ -60,13 +60,24 @@ struct DetailView: View {
                 
                 VStack(alignment: .leading, spacing: 15) {
                     HStack {
-                        Button {
-                            showCover = false
-                        } label: {
-                            Image(systemName: "chevron.left")
-                                .font(.spaceGroteskSemiBold(size: 22))
-                                .foregroundStyle(Color.darkBase)
+                        if #available(iOS 26, *) {
+                            Button {
+                                showCover = false
+                            } label: {
+                                Image(systemName: "chevron.left")
+                                    .font(.spaceGroteskSemiBold(size: 22))
+                                    .foregroundStyle(Color.darkBase)
+                            }
+                        } else {
+                            Button {
+                                showCover = false
+                            } label: {
+                                Image(systemName: "chevron.left")
+                                    .font(.spaceGroteskSemiBold(size: 22))
+                                    .foregroundStyle(Color.darkBase)
+                            }
                         }
+                        
                         
                         Spacer()
                         
@@ -354,10 +365,14 @@ struct DetailView: View {
 }
 
 #Preview {
+    let image = UIImage(named: "sample")!
+    let mainURL = StorageManager.shared.savePhoto(image)!
+    let thumbnailURL = StorageManager.shared.saveThumbnail(image)!
+    
     DetailView(selectedStorage: .constant(
         Storage(
-            mainPath: URL(string: "https://example.com")!,
-            thumbnailPath: URL(string: "https://example.com")!
+            mainPath: mainURL,
+            thumbnailPath: thumbnailURL
         )
     ), showCover: .constant(true))
     .environmentObject(TimerManager.shared)

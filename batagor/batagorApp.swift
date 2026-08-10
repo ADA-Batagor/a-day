@@ -37,6 +37,13 @@ struct batagorApp: App {
                         if navigationManager.shouldShowDetail {
                              try? await Task.sleep(nanoseconds: 100_000_000)
                         }
+                        
+                        #if targetEnvironment(simulator)
+                        PhotoSeederService.shared
+                            .seed(
+                                modelContext: sharedModelContainer.mainContext
+                            )
+                        #endif
                     }
                     sign()
                 }
