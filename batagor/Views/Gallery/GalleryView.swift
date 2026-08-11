@@ -102,19 +102,28 @@ struct GalleryView: View {
 
                 }
                 .background(alignment: .bottom) {
-                    VStack {
-                        Spacer()
-                        LinearGradient(
-                            stops: [
-                                Gradient.Stop(color: Color.lightBase, location: 0.0),
-                                Gradient.Stop(color: .clear, location: 0.5)
-                            ],
-                            startPoint: .bottom,
-                            endPoint: .top
-                        )
-                        .frame(height: 96)
+                    // Only needed pre-26: it hides the hard edge where scrollable
+                    // content meets the flat-color capture/selection buttons. On
+                    // iOS 26 those buttons are real glass and already blend with
+                    // whatever's behind them — painting this fade behind them instead
+                    // gives the glass a flat, opaque layer to sample, which visibly
+                    // shifts color as the real list content behind it changes during
+                    // scroll (most noticeable during overscroll bounce at the ends).
+                    if #unavailable(iOS 26.0) {
+                        VStack {
+                            Spacer()
+                            LinearGradient(
+                                stops: [
+                                    Gradient.Stop(color: Color.lightBase, location: 0.0),
+                                    Gradient.Stop(color: .clear, location: 0.5)
+                                ],
+                                startPoint: .bottom,
+                                endPoint: .top
+                            )
+                            .frame(height: 96)
+                        }
+                        .ignoresSafeArea()
                     }
-                    .ignoresSafeArea()
                 }
             }
             .onAppear {
