@@ -22,7 +22,7 @@ struct BulkDeleteButton: View {
                         .foregroundStyle(Color.darkBase)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 14)
-                        .glassEffect(.regular.tint(Color.blueBase).interactive(), in: RoundedRectangle(cornerRadius: 20))
+                        .glassEffect(.regular.tint(Color.redBase).interactive(), in: RoundedRectangle(cornerRadius: 20))
                 } else {
                     Image(systemName: "trash")
                         .font(.spaceGroteskBold(size: 17))
