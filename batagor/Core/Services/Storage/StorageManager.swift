@@ -15,6 +15,7 @@ class StorageManager {
     private let photosDirectory: URL
     private let moviesDirectory: URL
     private let thumbnailsDirectory: URL
+    private let imageCache = NSCache<NSURL, UIImage>()
 
     private init() {
         guard let sharedContainer = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: ModelContainerService.appGroupIdentifier) else {
@@ -67,11 +68,20 @@ class StorageManager {
     }
     
     /// Loads the file at `fileURL` into a `UIImage`, or `nil` if it's missing/invalid.
+    /// Cached in-memory so repeat loads of the same file (e.g. a gallery row
+    /// re-rendering) skip the disk read and decode.
     func loadUIImage(fileURL: URL) -> UIImage? {
-        guard let data = try? Data(contentsOf: fileURL) else {
+        let cacheKey = fileURL as NSURL
+        if let cached = imageCache.object(forKey: cacheKey) {
+            return cached
+        }
+
+        guard let data = try? Data(contentsOf: fileURL), let image = UIImage(data: data) else {
             return nil
         }
-        return UIImage(data: data)
+
+        imageCache.setObject(image, forKey: cacheKey)
+        return image
     }
     
     /// Removes the file at `fileURL` from disk. Silently no-ops if it doesn't exist.

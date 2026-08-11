@@ -21,7 +21,6 @@ struct GalleryList: View {
     private let topScrollThreshold: CGFloat = 155
     private let bottomScrollThreshold: CGFloat = 145
 
-    @State private var lastScrollPosition: CGFloat = 0
     @State private var swipeOffsets: [UUID: CGFloat] = [:]
     @State private var shouldAnimateSwipe: Set<UUID> = []
     @State private var isDragging: Set<UUID> = []
@@ -41,15 +40,11 @@ struct GalleryList: View {
                     GeometryReader { geo in
                         Color.clear
                             .onChange(of: geo.frame(in: .global).minY) { oldValue, newValue in
-                                let scrollDelta = newValue - oldValue
                                 let threshold: CGFloat = isScrolled ? topScrollThreshold : bottomScrollThreshold
                                 let isScrollable = newValue < threshold
 
-                                Task { @MainActor in
-                                    if isScrolled != isScrollable {
-                                        isScrolled = isScrollable
-                                    }
-                                    lastScrollPosition = scrollDelta
+                                if isScrolled != isScrollable {
+                                    isScrolled = isScrollable
                                 }
                             }
                     }
@@ -139,9 +134,6 @@ struct GalleryList: View {
                                     if swipedPhotoId == photo.id && horizontalMovement < 0 {
                                         return
                                     }
-
-                                    var transaction = Transaction()
-                                    transaction.disablesAnimations = true
 
                                     if abs(horizontalMovement) > abs(verticalMovement) * 1.5 && horizontalMovement < 0 {
                                         swipeOffsets[photo.id] = max(horizontalMovement, -90)
