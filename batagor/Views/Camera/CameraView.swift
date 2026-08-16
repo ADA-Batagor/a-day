@@ -48,8 +48,45 @@ struct Camera: View {
                 
                 ZStack(alignment: .center) {
                     GeometryReader { geometry in
-                        VStack(spacing: 0) {
+                        VStack(spacing: -2) {
+                            HStack(alignment: .center) {
+                                if #available(iOS 26, *) {
+                                    Button {
+                                        navigationManager.resetDetailNavigation()
+                                        navigationManager.navigate(to: .gallery)
+                                    } label: {
+                                        Image(systemName: "chevron.left")
+                                            .font(.spaceGroteskSemiBold(size: 17))
+                                            .foregroundStyle(Color.darkBase)
+                                    }
+                                    .padding(12)
+                                    .glassEffect(
+                                        .regular
+                                            .tint(.batagorLight.opacity(0.5))
+                                            .interactive(),
+                                        in: .circle
+                                    )
+                                } else {
+                                    Button {
+                                        navigationManager.resetDetailNavigation()
+                                        navigationManager.navigate(to: .gallery)
+                                    } label: {
+                                        Image(systemName: "chevron.left")
+                                            .font(.spaceGroteskSemiBold(size: 17))
+                                            .foregroundStyle(Color.lightBase)
+                                            .padding(.leading, 5)
+                                    }
+                                }
+                                
+                                Spacer()
+                                GalleryCount(currentCount: storages.count, foregroundColor: Color.lightBase, countOnly: true)
+                                    .padding(.trailing, 5)
+                            }
+                            .padding(.horizontal, 20)
+                            .padding(.top, 35)
+                            
                             Spacer()
+                            
                             if let image = cameraViewModel.previewImage {
                                 ZStack(alignment: .topTrailing) {
                                     image
@@ -69,6 +106,35 @@ struct Camera: View {
                                                 Color(.black)
                                             }
                                         }
+                                        .overlay(alignment: .top) {
+                                            if cameraViewModel.camera.flashMode == .auto {
+                                                if #available(iOS 26, *) {
+                                                    Text("Flash Auto")
+                                                        .font(.spaceGroteskSemiBold(size: 16))
+                                                        .foregroundStyle(
+                                                            Color.adayDark
+                                                        )
+                                                        .padding(.horizontal, 8)
+                                                        .padding(.vertical, 4)
+                                                        .glassEffect(
+                                                            .regular.tint(.adayLight.opacity(0.8)),
+                                                            in: .capsule
+                                                        )
+                                                        .padding(.top, 20)
+                                                } else {
+                                                    Text("Flash Auto")
+                                                        .font(.spaceGroteskSemiBold(size: 18))
+                                                        .foregroundStyle(
+                                                            Color.adayDark
+                                                        )
+                                                        .padding(.horizontal, 8)
+                                                        .padding(.vertical, 4)
+                                                        .background(Color.adayLight.opacity(0.8))
+                                                        .clipShape(.capsule)
+                                                        .padding(.top, 20)
+                                                }
+                                            }
+                                        }
                                         .gesture(
                                             MagnificationGesture()
                                                 .onChanged { value in
@@ -85,17 +151,17 @@ struct Camera: View {
                                                     let location = value.location
                                                     let normalizedX = location.x / geometry.size.width
                                                     let normalizedY = location.y / geometry.size.height
-
+                                                    
                                                     let clampedPoint = CGPoint(
                                                         x: min(max(normalizedX, 0), 1),
                                                         y: min(max(normalizedY, 0), 1)
                                                     )
-
+                                                    
                                                     focusPoint = location
                                                     withAnimation {
                                                         showFocusIndicator = true
                                                     }
-
+                                                    
                                                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                                                         withAnimation {
                                                             showFocusIndicator = false
@@ -104,7 +170,7 @@ struct Camera: View {
                                                     cameraViewModel.camera.setFocus(at: clampedPoint)
                                                 }
                                         )
-
+                                    
                                     Button {
                                         cameraViewModel.camera.cycleFlash()
                                     } label: {
@@ -120,11 +186,11 @@ struct Camera: View {
                                         )
                                         .clipShape(Circle())
                                     }
-                                    .padding(.vertical, 20)
+                                    .padding(.top, 15)
                                     .padding(.horizontal, 32)
                                 }
                             } else {
-                                ZStack {
+                                ZStack(alignment: .topTrailing) {
                                     Color(.black)
                                     
                                     if cameraViewModel.showCameraPermissionAlert {
@@ -140,7 +206,6 @@ struct Camera: View {
                                 .aspectRatio(9/16, contentMode: .fit)
                                 .clipShape(RoundedRectangle(cornerRadius: 20))
                                 .padding(.horizontal, 22)
-                                .padding(.top, 12)
                             }
                             CameraToolbar(
                                 cameraViewModel: cameraViewModel,
@@ -157,7 +222,6 @@ struct Camera: View {
                             .padding(.bottom, 30)
                         }
                         .safeAreaPadding(.top)
-                        
                         
                     }
                     if showStorageLimitAlert {
@@ -184,22 +248,6 @@ struct Camera: View {
                 }
                 .onDisappear {
                     cameraViewModel.camera.isPreviewPaused = true
-                }
-            }
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        navigationManager.resetDetailNavigation()
-                        navigationManager.navigate(to: .gallery)
-                    } label: {
-                        Image(systemName: "chevron.left")
-                            .font(.spaceGroteskSemiBold(size: 17))
-                            .foregroundStyle(Color.lightBase)
-                    }
-                    .padding(.leading, 8)
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    GalleryCount(currentCount: storages.count, foregroundColor: Color.lightBase, countOnly: true)
                 }
             }
             .ignoresSafeArea(.all)

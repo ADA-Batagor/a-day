@@ -198,7 +198,13 @@ struct DetailView: View {
         }
         .overlay(alignment: .bottom) {
             if let selectedStorage = selectedStorage {
-                RemainingTime(storage: selectedStorage, variant: .large)
+                if #available(iOS 26, *) {
+                    RemainingTime(storage: selectedStorage, variant: .large)
+                        .padding(5)
+                        .glassEffect(.regular.interactive(), in: .capsule)
+                } else {
+                    RemainingTime(storage: selectedStorage, variant: .large)
+                }
             }
         }
         .alert(
@@ -314,15 +320,27 @@ struct DetailView: View {
     private var toolbarActions: some View {
         HStack(alignment: .center, spacing: toolbarSpacing) {
             if previousPage == .camera {
-                Button {
-                    showCover = false
-                    NavigationManager.shared.navigate(to: .gallery)
-                } label: {
-                    Text("All Media")
-                        .font(.spaceGroteskSemiBold(size: 18))
-                        .foregroundStyle(Color.darkBase)
+                if #available(iOS 26, *) {
+                    Button {
+                        showCover = false
+                        NavigationManager.shared.navigate(to: .gallery)
+                    } label: {
+                        Image(systemName: "photo.on.rectangle")
+                            .font(.spaceGroteskSemiBold(size: 17))
+                            .foregroundStyle(Color.darkBase)
+                    }
+                    .toolbarGlass()
+                } else {
+                    Button {
+                        showCover = false
+                        NavigationManager.shared.navigate(to: .gallery)
+                    } label: {
+                        Text("All Media")
+                            .font(.spaceGroteskSemiBold(size: 18))
+                            .foregroundStyle(Color.darkBase)
+                    }
                 }
-                .toolbarGlass()
+                
             }
 
             if let selectedStorage = selectedStorage {
@@ -386,7 +404,9 @@ struct DetailView: View {
 private struct GlassButtonIfAvailable: ViewModifier {
     func body(content: Content) -> some View {
         if #available(iOS 26, *) {
-            content.buttonStyle(.glass)
+            content
+                .padding(10)
+                .glassEffect(.regular.interactive(), in: .circle)
         } else {
             content
         }

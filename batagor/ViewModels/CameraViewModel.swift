@@ -86,6 +86,10 @@ class CameraViewModel: ObservableObject {
     }
     
     func handleCameraPreview() async {
+        #if targetEnvironment(simulator)
+        previewImage = Image("sample")
+        #endif
+
         let imageStream = camera.previewStream
             .map { $0.image }
         

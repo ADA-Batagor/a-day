@@ -80,58 +80,46 @@ struct CameraToolbar: View {
                         .fill((storageCount >= 24 || cameraViewModel.isCameraInterrupted) ? .gray : Color.lightBase)
                 }
                 
-                Circle()
-                    .inset(by: lineWidth * 1.2)
-                    .fill((storageCount >= 24 || cameraViewModel.isCameraInterrupted) ? .gray : isRecording ? .red : Color.lightBase)
-                    .scaleEffect(isPressed ? 0.85 : 1.0)
-                    .frame(height: isRecording ? 120 : 75)
-                    .onTapGesture {
-                        withAnimation(.easeInOut(duration: 0.15)) {
-                            isPressed = true
-                        }
-                        
-                        HapticManager.shared.impact(.light)
-                        cameraViewModel.camera.takePhoto()
-                        
-                        withAnimation(.easeInOut(duration: 0.05)) {
-                            capturingPhoto = true
-                        }
-                        
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: {
-                            withAnimation(.easeInOut(duration: 0.05)) {
-                                capturingPhoto = false
-                                isPressed = false
+                if #available(iOS 26, *) {
+                    Circle()
+                        .inset(by: lineWidth * 1.2)
+                        .fill((storageCount >= 24 || cameraViewModel.isCameraInterrupted) ? .gray : isRecording ? .red : Color.lightBase)
+                        .scaleEffect(isPressed ? 0.85 : 1.0)
+                        .frame(height: isRecording ? 120 : 75)
+                        .glassEffect(.regular)
+                        .onTapGesture {
+                            withAnimation(.easeInOut(duration: 0.15)) {
+                                isPressed = true
                             }
-                        })
-                    }
-                    .onLongPressGesture {
-                        guard !cameraViewModel.isCameraInterrupted else { return }
-                        withAnimation(.easeInOut(duration: 0.15)) {
-                            isPressed = true
-                            isRecording = true
-                        }
-                        
-                        HapticManager.shared.impact(.light)
-                        cameraViewModel.startRecordingVideo()
-                    } onPressingChanged: { pressing in
-                        if pressing {
-                            guard !cameraViewModel.isCameraInterrupted else { return }
-                        }
-                        cameraViewModel.camera.stopRecordingVideo()
-                        if isRecording {
-                            HapticManager.shared.impact(.light)
-                        }
-                        
-                        withAnimation(.easeInOut(duration: 0.15)) {
-                            isPressed = false
-                            isRecording = false
-                            currentDuration = 0
-                        }
-                    }
-                    .onChange(of: currentDuration) { _, newValue in
-                        if newValue >= movieDurationLimit {
-                            cameraViewModel.camera.stopRecordingVideo()
                             
+                            HapticManager.shared.impact(.light)
+                            cameraViewModel.camera.takePhoto()
+                            
+                            withAnimation(.easeInOut(duration: 0.05)) {
+                                capturingPhoto = true
+                            }
+                            
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: {
+                                withAnimation(.easeInOut(duration: 0.05)) {
+                                    capturingPhoto = false
+                                    isPressed = false
+                                }
+                            })
+                        }
+                        .onLongPressGesture {
+                            guard !cameraViewModel.isCameraInterrupted else { return }
+                            withAnimation(.easeInOut(duration: 0.15)) {
+                                isPressed = true
+                                isRecording = true
+                            }
+                            
+                            HapticManager.shared.impact(.light)
+                            cameraViewModel.startRecordingVideo()
+                        } onPressingChanged: { pressing in
+                            if pressing {
+                                guard !cameraViewModel.isCameraInterrupted else { return }
+                            }
+                            cameraViewModel.camera.stopRecordingVideo()
                             if isRecording {
                                 HapticManager.shared.impact(.light)
                             }
@@ -142,7 +130,86 @@ struct CameraToolbar: View {
                                 currentDuration = 0
                             }
                         }
-                    }
+                        .onChange(of: currentDuration) { _, newValue in
+                            if newValue >= movieDurationLimit {
+                                cameraViewModel.camera.stopRecordingVideo()
+                                
+                                if isRecording {
+                                    HapticManager.shared.impact(.light)
+                                }
+                                
+                                withAnimation(.easeInOut(duration: 0.15)) {
+                                    isPressed = false
+                                    isRecording = false
+                                    currentDuration = 0
+                                }
+                            }
+                        }
+                } else {
+                    Circle()
+                        .inset(by: lineWidth * 1.2)
+                        .fill((storageCount >= 24 || cameraViewModel.isCameraInterrupted) ? .gray : isRecording ? .red : Color.lightBase)
+                        .scaleEffect(isPressed ? 0.85 : 1.0)
+                        .frame(height: isRecording ? 120 : 75)
+                        .onTapGesture {
+                            withAnimation(.easeInOut(duration: 0.15)) {
+                                isPressed = true
+                            }
+                            
+                            HapticManager.shared.impact(.light)
+                            cameraViewModel.camera.takePhoto()
+                            
+                            withAnimation(.easeInOut(duration: 0.05)) {
+                                capturingPhoto = true
+                            }
+                            
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: {
+                                withAnimation(.easeInOut(duration: 0.05)) {
+                                    capturingPhoto = false
+                                    isPressed = false
+                                }
+                            })
+                        }
+                        .onLongPressGesture {
+                            guard !cameraViewModel.isCameraInterrupted else { return }
+                            withAnimation(.easeInOut(duration: 0.15)) {
+                                isPressed = true
+                                isRecording = true
+                            }
+                            
+                            HapticManager.shared.impact(.light)
+                            cameraViewModel.startRecordingVideo()
+                        } onPressingChanged: { pressing in
+                            if pressing {
+                                guard !cameraViewModel.isCameraInterrupted else { return }
+                            }
+                            cameraViewModel.camera.stopRecordingVideo()
+                            if isRecording {
+                                HapticManager.shared.impact(.light)
+                            }
+                            
+                            withAnimation(.easeInOut(duration: 0.15)) {
+                                isPressed = false
+                                isRecording = false
+                                currentDuration = 0
+                            }
+                        }
+                        .onChange(of: currentDuration) { _, newValue in
+                            if newValue >= movieDurationLimit {
+                                cameraViewModel.camera.stopRecordingVideo()
+                                
+                                if isRecording {
+                                    HapticManager.shared.impact(.light)
+                                }
+                                
+                                withAnimation(.easeInOut(duration: 0.15)) {
+                                    isPressed = false
+                                    isRecording = false
+                                    currentDuration = 0
+                                }
+                            }
+                        }
+                }
                 
             }
             .frame(height: 75)
@@ -191,7 +258,7 @@ struct CameraToolbar: View {
         }
     }
 }
-    
+
 
 //#Preview {
 //    CameraToolbar()
