@@ -38,6 +38,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		015E0F57EE876DE72BF9B652 /* Shared.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Shared.xcconfig; sourceTree = "<group>"; };
+		0CFC889ACA1539CDEE02B8DB /* Local.xcconfig.template */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Local.xcconfig.template; sourceTree = "<group>"; };
 		3F764C722EB09ED70028EDD1 /* widgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = widgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		3F764C8E2EB0A96C0028EDD1 /* SwiftData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftData.framework; path = System/Library/Frameworks/SwiftData.framework; sourceTree = SDKROOT; };
 		3FDD00D72EAF506300E14B66 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
@@ -143,9 +145,19 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		70BC9C5A6DE4E2090D5008B2 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				015E0F57EE876DE72BF9B652 /* Shared.xcconfig */,
+				0CFC889ACA1539CDEE02B8DB /* Local.xcconfig.template */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
 		9E61FA002EA75DD200053854 = {
 			isa = PBXGroup;
 			children = (
+				70BC9C5A6DE4E2090D5008B2 /* Config */,
 				9E61FA0B2EA75DD200053854 /* batagor */,
 				3F764C752EB09ED70028EDD1 /* widget */,
 				3FDD00D62EAF506300E14B66 /* Frameworks */,
@@ -311,7 +323,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.tudemaha.lawar.widget;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.tudemaha.$(BUNDLE_ID_SUFFIX).widget";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -343,7 +355,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.tudemaha.lawar.widget;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.tudemaha.$(BUNDLE_ID_SUFFIX).widget";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -358,6 +370,7 @@
 		};
 		9E61FA172EA75DD400053854 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 015E0F57EE876DE72BF9B652 /* Shared.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -391,7 +404,6 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = HRYT2ZQSJ5;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -423,6 +435,7 @@
 		};
 		9E61FA182EA75DD400053854 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 015E0F57EE876DE72BF9B652 /* Shared.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -456,7 +469,6 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = HRYT2ZQSJ5;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -513,7 +525,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.tudemaha.lawar;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.tudemaha.$(BUNDLE_ID_SUFFIX)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -559,7 +571,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.tudemaha.lawar;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.tudemaha.$(BUNDLE_ID_SUFFIX)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;

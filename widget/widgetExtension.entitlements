@@ -4,7 +4,7 @@
 <dict>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>group.com.tudemaha.lawar</string>
+		<string>group.com.tudemaha.$(BUNDLE_ID_SUFFIX)</string>
 	</array>
 </dict>
 </plist>

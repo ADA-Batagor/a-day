@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-# Re-applies your personal bundle-id suffix (scripts/local-bundle-id.sh) after
-# `git pull`/`git merge`, so a pull never leaves the team-default identifiers
-# in place over your local override. Requires: git config core.hooksPath .githooks
-"$(git rev-parse --show-toplevel)/scripts/local-bundle-id.sh" reapply

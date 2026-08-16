@@ -54,21 +54,24 @@ The team-default bundle identifier (`com.tudemaha.lawar`) and its App Group are 
 to one signing team, so you need your own before the App Group will work under your
 account:
 
-1. Run `./scripts/local-bundle-id.sh set <your-suffix>` from the repo root — this
-   rewrites the bundle identifier and App Group for both targets in one shot (see
-   `CONTRIBUTING.md` for details).
-2. Run `git config core.hooksPath .githooks` once so future `git pull`s
-   automatically keep your identifier instead of reverting to the team default.
+1. Copy `Config/Local.xcconfig.template` to `Config/Local.xcconfig` (gitignored —
+   never shared or committed).
+2. Fill in `BUNDLE_ID_SUFFIX` and `DEVELOPMENT_TEAM` in that file with your own
+   values. The bundle identifier, App Group entitlement, and signing team for
+   both targets all resolve from these two settings — see `CONTRIBUTING.md` for
+   details.
 
 ### Step 3: Configure Signing & Capabilities (For Physical Devices)
+
+Your **Team** is already picked up from `Config/Local.xcconfig` (Step 2), so you
+only need to add the App Group:
 
 1. Select the root **batagor** project in the Xcode Project Navigator.
 2. Under **Targets**, select the **batagor** target.
 3. Navigate to the **Signing & Capabilities** tab.
-4. Select your **Team** to resolve provisioning profile errors.
-5. In the **App Groups** section, add/select the group the script wrote in Step 2
+4. In the **App Groups** section, add/select the group matching Step 2's suffix
    (`group.com.tudemaha.<your-suffix>`).
-6. Repeat the same signing configuration steps for the **widget** target.
+5. Repeat the same App Groups step for the **widget** target.
 
 ### Step 4: Run the Application
 
