@@ -170,7 +170,7 @@ struct GalleryView: View {
                 if !photos.isEmpty {
                     if #available(iOS 26.0, *) {
                         ToolbarItem(placement: .topBarTrailing) {
-                            HStack(spacing: 8) {
+                            HStack {
                                 CircleButton(icon: "gear") // placeholder — Settings screen wired up separately
                                 SelectButton(
                                     isSelectionMode: $isSelectionMode,
