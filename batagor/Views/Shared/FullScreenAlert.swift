@@ -29,19 +29,33 @@ struct FullScreenAlert: View {
             .foregroundStyle(Color.white)
             .padding(.horizontal, 20)
             
-            Button {
-                if let settingsURL = URL(
-                    string: buttonActionURL
-                ) {
-                    UIApplication.shared.open(settingsURL)
+            if #available(iOS 26, *) {
+                Button {
+                    if let settingsURL = URL(
+                        string: buttonActionURL
+                    ) {
+                        UIApplication.shared.open(settingsURL)
+                    }
+                } label: {
+                    Text(buttonText)
+                        .font(.spaceGroteskSemiBold(size: 15))
+                        .foregroundStyle(Color.batagorLight)
+                        .padding(15)
+                        .glassEffect(.regular.interactive().tint(.adayPrimary))
                 }
-            } label: {
-                Text(buttonText)
-                    .font(.spaceGroteskSemiBold(size: 15))
-                    .foregroundStyle(Color.batagorLight)
-                    .padding(15)
-                    .background(Color.batagorPrimary)
-                    .clipShape(.capsule)
+            } else {
+                Button {
+                    if let settingsURL = URL(
+                        string: buttonActionURL
+                    ) {
+                        UIApplication.shared.open(settingsURL)
+                    }
+                } label: {
+                    Text(buttonText)
+                        .font(.spaceGroteskSemiBold(size: 15))
+                        .foregroundStyle(Color.batagorLight)
+                        .padding(15) 
+                }
             }
         }
     }

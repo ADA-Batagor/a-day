@@ -82,11 +82,10 @@ struct CameraToolbar: View {
                 
                 if #available(iOS 26, *) {
                     Circle()
-                        .inset(by: lineWidth * 1.2)
                         .fill((storageCount >= 24 || cameraViewModel.isCameraInterrupted) ? .gray : isRecording ? .red : Color.lightBase)
+                        .glassEffect(.regular, in: .circle)
                         .scaleEffect(isPressed ? 0.85 : 1.0)
-                        .frame(height: isRecording ? 120 : 75)
-                        .glassEffect(.regular)
+                        .frame(height: isRecording ? 120 : 65)
                         .onTapGesture {
                             withAnimation(.easeInOut(duration: 0.15)) {
                                 isPressed = true

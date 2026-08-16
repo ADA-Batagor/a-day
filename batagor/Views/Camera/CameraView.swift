@@ -190,7 +190,7 @@ struct Camera: View {
                                     .padding(.horizontal, 32)
                                 }
                             } else {
-                                ZStack(alignment: .topTrailing) {
+                                ZStack {
                                     Color(.black)
                                     
                                     if cameraViewModel.showCameraPermissionAlert {
