@@ -19,17 +19,20 @@ struct BulkDeleteButton: View {
                 if #available(iOS 26.0, *) {
                     Image(systemName: "trash")
                         .font(.spaceGroteskBold(size: 17))
-                        .foregroundStyle(Color.darkBase)
+                        .foregroundStyle(isDisabled ? Color.light50 : Color.darkBase)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 14)
-                        .glassEffect(.regular.tint(Color.redBase).interactive(), in: RoundedRectangle(cornerRadius: 20))
+                        .glassEffect(
+                            isDisabled ? .regular.tint(Color.dark20).interactive() : .regular.tint(Color.redBase).interactive(),
+                            in: RoundedRectangle(cornerRadius: 20)
+                        )
                 } else {
                     Image(systemName: "trash")
                         .font(.spaceGroteskBold(size: 17))
-                        .foregroundStyle(Color.darkBase)
+                        .foregroundStyle(isDisabled ? Color.light50 : Color.darkBase)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 14)
-                        .background(Color.blueBase)
+                        .background(isDisabled ? Color.dark20 : Color.blueBase)
                         .cornerRadius(20)
                 }
             }
