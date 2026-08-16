@@ -70,36 +70,7 @@ struct GalleryView: View {
 
                 VStack {
                     Spacer()
-                    if isSelectionMode {
-                        SelectionActionBar(
-                            photos: photos,
-                            selectedMediaIds: selectedMediaIds
-                        ) {
-                            if !selectedMediaIds.isEmpty {
-                                isDeletingSelectedMedia = true
-                            }
-                        }
-                    } else {
-                        CaptureButton(photoCount: photos.count, mediaLimit: MEDIA_LIMIT) {
-                            if photos.count < MEDIA_LIMIT {
-                                navigationManager.navigate(to: .camera)
-                            } else {
-                                if showLimitToast {
-                                    showLimitToast = false
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                                        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                                            showLimitToast = true
-                                        }
-                                    }
-                                } else {
-                                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                                        showLimitToast = true
-                                    }
-                                }
-                            }
-                        }
-                    }
-
+                    bottomBar
                 }
                 .background(alignment: .bottom) {
                     // Only needed pre-26: it hides the hard edge where scrollable
@@ -317,6 +288,52 @@ struct GalleryView: View {
             }
         }
 
+    }
+
+    @ViewBuilder
+    private var bottomBar: some View {
+        // Both bars stay mounted permanently and cross-fade via opacity/scale
+        // instead of an `if isSelectionMode` swap. A freshly-inserted
+        // .glassEffect() view flashes on the frame it's first inserted while
+        // its backdrop sampling initializes (same issue fixed for the
+        // per-photo swipe-delete button in GalleryList) — staying mounted
+        // avoids re-triggering that flash on every selection-mode toggle.
+        ZStack {
+            CaptureButton(photoCount: photos.count, mediaLimit: MEDIA_LIMIT) {
+                if photos.count < MEDIA_LIMIT {
+                    navigationManager.navigate(to: .camera)
+                } else {
+                    if showLimitToast {
+                        showLimitToast = false
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                showLimitToast = true
+                            }
+                        }
+                    } else {
+                        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                            showLimitToast = true
+                        }
+                    }
+                }
+            }
+            .opacity(isSelectionMode ? 0 : 1)
+            .scaleEffect(isSelectionMode ? 0.92 : 1)
+            .allowsHitTesting(!isSelectionMode)
+
+            SelectionActionBar(
+                photos: photos,
+                selectedMediaIds: selectedMediaIds
+            ) {
+                if !selectedMediaIds.isEmpty {
+                    isDeletingSelectedMedia = true
+                }
+            }
+            .opacity(isSelectionMode ? 1 : 0)
+            .scaleEffect(isSelectionMode ? 1 : 0.92)
+            .allowsHitTesting(isSelectionMode)
+        }
+        .animation(.easeInOut(duration: 0.2), value: isSelectionMode)
     }
 
     @ViewBuilder
