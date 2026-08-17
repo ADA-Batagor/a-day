@@ -29,17 +29,33 @@ struct CustomAlert: View {
             .padding(.vertical, 20)
             .padding(.horizontal, 16)
             
-            Divider()
-                .background(Color.gray.opacity(0.3))
+            if #unavailable(iOS 26) {
+                Divider()
+                    .background(Color.gray.opacity(0.3))
+            }
             
-            Button {
-                onSubmit()
-            } label: {
-                Text(buttonTitle)
-                    .font(.spaceGroteskSemiBold(size: 17))
-                    .foregroundStyle(Color.blue70Hue)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
+            if #available(iOS 26, *) {
+                Button {
+                    onSubmit()
+                } label: {
+                    Text(buttonTitle)
+                        .font(.spaceGroteskSemiBold(size: 17))
+                        .foregroundStyle(Color.adayLight)
+                        .frame(width: 250)
+                        .padding(.vertical, 8)
+                        .glassEffect(.regular.tint(.adayPrimary), in: .capsule)
+                        .padding(.bottom, 12)
+                }
+            } else {
+                Button {
+                    onSubmit()
+                } label: {
+                    Text(buttonTitle)
+                        .font(.spaceGroteskSemiBold(size: 17))
+                        .foregroundStyle(Color.blue70Hue)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                }
             }
         }
         .frame(width: 270)
