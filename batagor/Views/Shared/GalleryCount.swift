@@ -26,11 +26,8 @@ struct GalleryCount: View {
             Text(countOnly ? "\(currentCount) / \(totalLimit)" : "\(currentCount) / \(totalLimit) Snaps")
                 .font(.spaceGroteskSemiBold(size: 17))
                 .foregroundStyle(foregroundColor)
-            
-            Spacer()
         }
-        .padding(.top, 8)
-        .padding(.bottom, 12)
+        .padding(.vertical, 8)
     }
 }
 

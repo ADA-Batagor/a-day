@@ -24,7 +24,7 @@ class PhotoSeederService {
         let colors: [UIColor] = [.systemRed, .systemBlue, .systemGreen]
         let labels = ["Photo 1", "Photo 2", "Photo 3"]
         
-        let expirationTimes: [TimeInterval] = [10, 30, 60]
+        let expirationTimes: [TimeInterval] = [120, 240, 360]
         
         for (index, color) in colors.enumerated() {
             let dummyPhoto = createDummyPhoto(color: color, label: labels[index])
@@ -32,7 +32,7 @@ class PhotoSeederService {
             if let fileURL = StorageManager.shared.savePhoto(dummyPhoto) {
                 let file = Storage(createdAt: Date(), expiredAt: expirationTimes[index], mainPath: fileURL, thumbnailPath: fileURL)
                 modelContext.insert(file)
-//                print("Added \(labels[index]) - expires in \(expirationTimes[index])s")
+                print("Added \(labels[index]) - expires in \(expirationTimes[index])s")
             }
         }
         
@@ -41,7 +41,7 @@ class PhotoSeederService {
     }
     
     private func createDummyPhoto(color: UIColor, label: String) -> UIImage {
-        let size = CGSize(width: 400, height: 600)
+        let size = CGSize(width: 1080, height: 1920)
         let renderer = UIGraphicsImageRenderer(size: size)
         
         let image = renderer.image { context in

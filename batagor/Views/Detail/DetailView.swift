@@ -21,6 +21,10 @@ struct DetailView: View {
     @State private var showDeleteConfirmation: Bool = false
     @State private var selectedThumbnail: Storage?
     @State private var selectedVideo: Storage?
+    @State private var showSaveToast: Bool = false
+    @State private var saveToastMessage: String = ""
+    @State private var saveToastIcon: String = "checkmark.circle"
+    @State private var showPhotoLibraryPermissionAlert: Bool = false
     
     //    gesture state
     @State private var offset: CGSize = .zero
@@ -42,6 +46,20 @@ struct DetailView: View {
         allStorages.filter { $0.expiredAt > Date() }
     }
     
+    @Namespace var toolbarNamespace
+
+    private var toolbarIconFont: Font {
+        if #available(iOS 26, *) {
+            .spaceGroteskSemiBold(size: 18)
+        } else {
+            .spaceGroteskSemiBold(size: 22)
+        }
+    }
+
+    private var toolbarSpacing: CGFloat? {
+        if #available(iOS 26, *) { nil } else { 25 }
+    }
+
     var body: some View {
         GeometryReader { geo in
             ZStack(alignment: .top) {
@@ -54,8 +72,8 @@ struct DetailView: View {
                     endPoint: .bottom
                 )
                 
-                VStack(alignment: .leading, spacing: 15) {
-                    HStack {
+                VStack(alignment: .leading) {
+                    HStack(alignment: .center) {
                         Button {
                             showCover = false
                         } label: {
@@ -63,49 +81,19 @@ struct DetailView: View {
                                 .font(.spaceGroteskSemiBold(size: 22))
                                 .foregroundStyle(Color.darkBase)
                         }
-                        
+                        .toolbarGlass()
+
                         Spacer()
-                        
-                        HStack(alignment: .center, spacing: 25) {
-                            if previousPage == .camera {
-                                Button {
-                                    showCover = false
-                                    NavigationManager.shared.navigate(to: .gallery)
-                                } label: {
-                                    Text("All Media")
-                                        .font(.spaceGroteskSemiBold(size: 18))
-                                        .foregroundStyle(Color.darkBase)
-                                }
+
+                        if #available(iOS 26, *) {
+                            GlassEffectContainer {
+                                toolbarActions
                             }
-                            
-                            if let selectedStorage = selectedStorage {
-                                ShareLink(item: selectedStorage.mainPath) {
-                                    Image(systemName: "square.and.arrow.up")
-                                        .font(.spaceGroteskSemiBold(size: 22))
-                                        .foregroundStyle(Color.darkBase)
-                                }
-                                
-                                Button {
-                                    showDeleteConfirmation = true
-                                } label: {
-                                    Image(systemName: "trash")
-                                        .font(.spaceGroteskSemiBold(size: 22))
-                                        .foregroundStyle(Color.darkBase)
-                                }
-                                .customConfirmationDialog(
-                                    "Don't need this snap anymore?",
-                                    isPresented: $showDeleteConfirmation,
-                                    actionTitle: "Delete",
-                                    actionColor: .redBase,
-                                    action: {
-                                        DeletionService.shared.manualDelete(modelContext: modelContext, storage: selectedStorage)
-                                    },
-                                    cancel: {},
-                                    message:"This will delete it for good. This action can't be undone."
-                                )
-                            }
+                        } else {
+                            toolbarActions
                         }
                     }
+                    .padding(.top, 2)
                     
                     ScrollViewReader { proxy in
                         ScrollView(.horizontal, showsIndicators: false) {
@@ -156,6 +144,7 @@ struct DetailView: View {
                                     .frame(maxHeight: .infinity)
                                     .contentShape(Rectangle())
                                     .simultaneousGesture(simultaneousGesture())
+                                    .toast(isShowing: $showSaveToast, message: saveToastMessage, icon: saveToastIcon)
                                 }
                             }
                             .scrollTargetLayout()
@@ -209,8 +198,29 @@ struct DetailView: View {
         }
         .overlay(alignment: .bottom) {
             if let selectedStorage = selectedStorage {
-                RemainingTime(storage: selectedStorage, variant: .large)
+                if #available(iOS 26, *) {
+                    RemainingTime(storage: selectedStorage, variant: .large)
+                        .padding(5)
+                        .glassEffect(.regular.interactive(), in: .capsule)
+                } else {
+                    RemainingTime(storage: selectedStorage, variant: .large)
+                }
             }
+        }
+        .alert(
+            "Photos Access Required",
+            isPresented: $showPhotoLibraryPermissionAlert
+        ) {
+            Button("Open Settings") {
+                if let settingsURL = URL(
+                    string: UIApplication.openSettingsURLString
+                ) {
+                    UIApplication.shared.open(settingsURL)
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("A Day needs Photos access to save this snap. Please enable it in Settings.")
         }
     }
     
@@ -305,13 +315,137 @@ struct DetailView: View {
                 }
         )
     }
+    
+    @ViewBuilder
+    private var toolbarActions: some View {
+        HStack(alignment: .center, spacing: toolbarSpacing) {
+            if previousPage == .camera {
+                if #available(iOS 26, *) {
+                    Button {
+                        showCover = false
+                        NavigationManager.shared.navigate(to: .gallery)
+                    } label: {
+                        Image(systemName: "photo.on.rectangle")
+                            .font(.spaceGroteskSemiBold(size: 17))
+                            .foregroundStyle(Color.darkBase)
+                    }
+                    .toolbarGlass()
+                } else {
+                    Button {
+                        showCover = false
+                        NavigationManager.shared.navigate(to: .gallery)
+                    } label: {
+                        Text("All Media")
+                            .font(.spaceGroteskSemiBold(size: 18))
+                            .foregroundStyle(Color.darkBase)
+                    }
+                }
+                
+            }
+
+            if let selectedStorage = selectedStorage {
+                Button {
+                    saveToPhotos(selectedStorage)
+                } label: {
+                    Image(systemName: "square.and.arrow.down")
+                        .font(toolbarIconFont)
+                        .foregroundStyle(Color.darkBase)
+                }
+                .toolbarGlassUnion(toolbarNamespace)
+
+                ShareLink(item: selectedStorage.mainPath) {
+                    Image(systemName: "square.and.arrow.up")
+                        .font(toolbarIconFont)
+                        .foregroundStyle(Color.darkBase)
+                }
+                .toolbarGlassUnion(toolbarNamespace)
+
+                Button {
+                    showDeleteConfirmation = true
+                } label: {
+                    Image(systemName: "trash")
+                        .font(toolbarIconFont)
+                        .foregroundStyle(Color.darkBase)
+                }
+                .toolbarGlassUnion(toolbarNamespace)
+                .customConfirmationDialog(
+                    "Don't need this snap anymore?",
+                    isPresented: $showDeleteConfirmation,
+                    actionTitle: "Delete",
+                    actionColor: .redBase,
+                    action: {
+                        DeletionService.shared.manualDelete(modelContext: modelContext, storage: selectedStorage)
+                    },
+                    cancel: {},
+                    message: "This will delete it for good. This action can't be undone."
+                )
+            }
+        }
+    }
+
+    private func saveToPhotos(_ selectedStorage: Storage) {
+        Task {
+            do {
+                try await PhotoLibraryService.shared.save(selectedStorage)
+                saveToastIcon = "checkmark.circle"
+                saveToastMessage = "Saved to Photos."
+                showSaveToast = true
+            } catch PhotoLibrarySaveError.permissionDenied {
+                showPhotoLibraryPermissionAlert = true
+            } catch {
+                saveToastIcon = "exclamationmark.triangle"
+                saveToastMessage = error.localizedDescription
+                showSaveToast = true
+            }
+        }
+    }
+}
+
+private struct GlassButtonIfAvailable: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 26, *) {
+            content
+                .padding(10)
+                .glassEffect(.regular.interactive(), in: .circle)
+        } else {
+            content
+        }
+    }
+}
+
+private struct GlassUnionButtonIfAvailable: ViewModifier {
+    var namespace: Namespace.ID
+
+    func body(content: Content) -> some View {
+        if #available(iOS 26, *) {
+            content
+                .buttonStyle(.glass)
+                .glassEffectUnion(id: "toolbar", namespace: namespace)
+        } else {
+            content
+        }
+    }
+}
+
+private extension View {
+    func toolbarGlass() -> some View {
+        self.modifier(GlassButtonIfAvailable())
+    }
+
+    func toolbarGlassUnion(_ namespace: Namespace.ID) -> some View {
+        self.modifier(GlassUnionButtonIfAvailable(namespace: namespace))
+    }
 }
 
 #Preview {
+    let image = UIImage(named: "sample")!
+    let mainURL = StorageManager.shared.savePhoto(image)!
+    let thumbnailURL = StorageManager.shared.saveThumbnail(image)!
+    
     DetailView(selectedStorage: .constant(
         Storage(
-            mainPath: URL(string: "https://example.com")!,
-            thumbnailPath: URL(string: "https://example.com")!
+            mainPath: mainURL,
+            thumbnailPath: thumbnailURL
         )
     ), showCover: .constant(true))
     .environmentObject(TimerManager.shared)

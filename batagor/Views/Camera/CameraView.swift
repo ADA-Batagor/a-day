@@ -48,81 +48,181 @@ struct Camera: View {
                 
                 ZStack(alignment: .center) {
                     GeometryReader { geometry in
-                        VStack(spacing: 0) {
-                            Spacer()
-                            if let image = cameraViewModel.previewImage {
-                                image
-                                    .resizable()
-                                    .scaledToFit()
-                                    .overlay {
-                                        if capturingPhoto {
-                                            Color(.black)
-                                        }
+                        VStack(spacing: -2) {
+                            HStack(alignment: .center) {
+                                if #available(iOS 26, *) {
+                                    Button {
+                                        navigationManager.resetDetailNavigation()
+                                        navigationManager.navigate(to: .gallery)
+                                    } label: {
+                                        Image(systemName: "chevron.left")
+                                            .font(.spaceGroteskSemiBold(size: 17))
+                                            .foregroundStyle(Color.darkBase)
                                     }
-                                    .clipShape(RoundedRectangle(cornerRadius: 20))
-                                    .overlay(alignment: .topLeading) {
-                                        if showFocusIndicator, let point = focusPoint {
-                                            FocusIndicator()
-                                                .offset(x: point.x - 35, y: point.y - 35)
-                                        }
+                                    .padding(12)
+                                    .glassEffect(
+                                        .regular
+                                            .tint(.batagorLight.opacity(0.5))
+                                            .interactive(),
+                                        in: .circle
+                                    )
+                                } else {
+                                    Button {
+                                        navigationManager.resetDetailNavigation()
+                                        navigationManager.navigate(to: .gallery)
+                                    } label: {
+                                        Image(systemName: "chevron.left")
+                                            .font(.spaceGroteskSemiBold(size: 17))
+                                            .foregroundStyle(Color.lightBase)
+                                            .padding(.leading, 5)
                                     }
-                                    .padding(.horizontal, 22)
-                                    .padding(.top, 12)
-                                    .gesture(
-                                        MagnificationGesture()
-                                            .onChanged { value in
-                                                let newZoom = currentZoom * value.magnitude
-                                                cameraViewModel.camera.setZoom(newZoom)
-                                            }
-                                            .onEnded { value in
-                                                currentZoom *= value.magnitude
-                                            }
-                                    )
-                                    .simultaneousGesture(
-                                        DragGesture(minimumDistance: 0)
-                                            .onEnded { value in
-                                                let location = value.location
-                                                let normalizedX = location.x / geometry.size.width
-                                                let normalizedY = location.y / geometry.size.height
-                                                
-                                                let clampedPoint = CGPoint(
-                                                    x: min(max(normalizedX, 0), 1),
-                                                    y: min(max(normalizedY, 0), 1)
-                                                )
-                                                
-                                                focusPoint = location
-                                                withAnimation {
-                                                    showFocusIndicator = true
-                                                }
-                                                
-                                                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                                                    withAnimation {
-                                                        showFocusIndicator = false
-                                                    }
-                                                }
-                                                cameraViewModel.camera.setFocus(at: clampedPoint)
-                                            }
-                                    )
-                            }
-                            if cameraViewModel.camera.isRunning && !cameraViewModel.camera.isPreviewPaused {
-                                CameraToolbar(
-                                    cameraViewModel: cameraViewModel,
-                                    storageCount: storages.count,
-                                    latestStorage: storages.last,
-                                    currentDuration: $currentDuration,
-                                    isRecording: $isRecording,
-                                    capturingPhoto: $capturingPhoto
-                                )
-                                .containerRelativeFrame(.vertical) { height, _ in
-                                    height * 0.15
                                 }
-                                .padding(.horizontal, 40)
-                                .padding(.bottom, 30)
+                                
+                                Spacer()
+                                GalleryCount(currentCount: storages.count, foregroundColor: Color.lightBase, countOnly: true)
+                                    .padding(.trailing, 5)
                             }
+                            .padding(.horizontal, 20)
+                            .padding(.top, 35)
+                            
+                            Spacer()
+                            
+                            if let image = cameraViewModel.previewImage {
+                                ZStack(alignment: .topTrailing) {
+                                    image
+                                        .resizable()
+                                        .scaledToFit()
+                                        .clipShape(RoundedRectangle(cornerRadius: 20))
+                                        .padding(.horizontal, 22)
+                                        .padding(.top, 12)
+                                        .overlay(alignment: .topLeading) {
+                                            if showFocusIndicator, let point = focusPoint {
+                                                FocusIndicator()
+                                                    .offset(x: point.x - 35, y: point.y - 35)
+                                            }
+                                        }
+                                        .overlay {
+                                            if capturingPhoto {
+                                                Color(.black)
+                                            }
+                                        }
+                                        .overlay(alignment: .top) {
+                                            if cameraViewModel.camera.flashMode == .auto {
+                                                if #available(iOS 26, *) {
+                                                    Text("Flash Auto")
+                                                        .font(.spaceGroteskSemiBold(size: 16))
+                                                        .foregroundStyle(
+                                                            Color.adayDark
+                                                        )
+                                                        .padding(.horizontal, 8)
+                                                        .padding(.vertical, 4)
+                                                        .glassEffect(
+                                                            .regular.tint(.adayLight.opacity(0.8)),
+                                                            in: .capsule
+                                                        )
+                                                        .padding(.top, 20)
+                                                } else {
+                                                    Text("Flash Auto")
+                                                        .font(.spaceGroteskSemiBold(size: 18))
+                                                        .foregroundStyle(
+                                                            Color.adayDark
+                                                        )
+                                                        .padding(.horizontal, 8)
+                                                        .padding(.vertical, 4)
+                                                        .background(Color.adayLight.opacity(0.8))
+                                                        .clipShape(.capsule)
+                                                        .padding(.top, 20)
+                                                }
+                                            }
+                                        }
+                                        .gesture(
+                                            MagnificationGesture()
+                                                .onChanged { value in
+                                                    let newZoom = currentZoom * value.magnitude
+                                                    cameraViewModel.camera.setZoom(newZoom)
+                                                }
+                                                .onEnded { value in
+                                                    currentZoom *= value.magnitude
+                                                }
+                                        )
+                                        .simultaneousGesture(
+                                            DragGesture(minimumDistance: 0)
+                                                .onEnded { value in
+                                                    let location = value.location
+                                                    let normalizedX = location.x / geometry.size.width
+                                                    let normalizedY = location.y / geometry.size.height
+                                                    
+                                                    let clampedPoint = CGPoint(
+                                                        x: min(max(normalizedX, 0), 1),
+                                                        y: min(max(normalizedY, 0), 1)
+                                                    )
+                                                    
+                                                    focusPoint = location
+                                                    withAnimation {
+                                                        showFocusIndicator = true
+                                                    }
+                                                    
+                                                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                                                        withAnimation {
+                                                            showFocusIndicator = false
+                                                        }
+                                                    }
+                                                    cameraViewModel.camera.setFocus(at: clampedPoint)
+                                                }
+                                        )
+                                    
+                                    Button {
+                                        cameraViewModel.camera.cycleFlash()
+                                    } label: {
+                                        Image(
+                                            systemName: cameraViewModel.camera.flashMode.iconName
+                                        )
+                                        .font(.system(size: 18))
+                                        .foregroundColor(.white)
+                                        .padding(8)
+                                        .background(
+                                            cameraViewModel.camera.flashMode.rawValue == 2 ? Color.batagorSecondary : Color.batagorDark
+                                                .opacity(0.5)
+                                        )
+                                        .clipShape(Circle())
+                                    }
+                                    .padding(.top, 15)
+                                    .padding(.horizontal, 32)
+                                }
+                            } else {
+                                ZStack {
+                                    Color(.black)
+                                    
+                                    if cameraViewModel.showCameraPermissionAlert {
+                                        FullScreenAlert(
+                                            iconName: "camera",
+                                            title: "Allow A Day to access your camera and microphone",
+                                            message: "This lets you share photos, record videos and preview effects.",
+                                            buttonText: "Open Settings",
+                                            buttonActionURL: UIApplication.openSettingsURLString
+                                        )
+                                    }
+                                }
+                                .aspectRatio(9/16, contentMode: .fit)
+                                .clipShape(RoundedRectangle(cornerRadius: 20))
+                                .padding(.horizontal, 22)
+                            }
+                            CameraToolbar(
+                                cameraViewModel: cameraViewModel,
+                                storageCount: storages.count,
+                                latestStorage: storages.last,
+                                currentDuration: $currentDuration,
+                                isRecording: $isRecording,
+                                capturingPhoto: $capturingPhoto
+                            )
+                            .containerRelativeFrame(.vertical) { height, _ in
+                                height * 0.15
+                            }
+                            .padding(.horizontal, 40)
+                            .padding(.bottom, 30)
                         }
                         .safeAreaPadding(.top)
                         
-
                     }
                     if showStorageLimitAlert {
                         Color.black.opacity(0.4)
@@ -150,59 +250,10 @@ struct Camera: View {
                     cameraViewModel.camera.isPreviewPaused = true
                 }
             }
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        navigationManager.resetDetailNavigation()
-                        navigationManager.navigate(to: .gallery)
-                    } label: {
-                        Image(systemName: "chevron.left")
-                            .font(.spaceGroteskSemiBold(size: 17))
-                            .foregroundStyle(Color.lightBase)
-                    }
-                    .padding(.leading, 8)
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    HStack(alignment: .center) {
-                        Button {
-                            cameraViewModel.camera.cycleFlash()
-                        } label: {
-                            Image(
-                                systemName: cameraViewModel.camera.flashMode.iconName
-                            )
-                            .font(.system(size: 12))
-                            .foregroundColor(.white)
-                            .padding(5)
-                            .background(
-                                cameraViewModel.camera.flashMode.rawValue == 2 ? Color.adaySecondary : Color.white
-                                    .opacity(0.4)
-                            )
-                            .clipShape(Circle())
-                        }
-                        
-                        GalleryCount(currentCount: storages.count, foregroundColor: Color.lightBase, countOnly: true)
-                    }
-                }
-            }
             .ignoresSafeArea(.all)
         }
         .task {
             await cameraViewModel.startCamera()
-        }
-        .alert(
-            "Camera Access Required",
-            isPresented: $cameraViewModel.showCameraPermissionAlert
-        ) {
-            Button("Open Settings") {
-                if let settingsURL = URL(
-                    string: UIApplication.openSettingsURLString
-                ) {
-                    UIApplication.shared.open(settingsURL)
-                }
-            }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("A Day needs camera access to take photos and record videos. Please enable it in Settings.")
         }
         .alert(
             "Microphone Access Required",
