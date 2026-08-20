@@ -2,7 +2,7 @@
 // Local.xcconfig (see Local.xcconfig.template) override these — see
 // CONTRIBUTING.md for the full local setup workflow.
 
-BUNDLE_ID_SUFFIX = lawar
-DEVELOPMENT_TEAM = HRYT2ZQSJ5
+BUNDLE_ID_SUFFIX = batagor
+DEVELOPMENT_TEAM = 4D8MTY7F2R
 
 #include? "Local.xcconfig"

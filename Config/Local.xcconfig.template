@@ -7,7 +7,7 @@
 // Uncomment and fill in both lines below, then in Xcode's Signing &
 // Capabilities (both the batagor and widgetExtension targets) add/select the
 // App Groups entry that matches your suffix
-// (group.com.tudemaha.<your-suffix>) — that part still has to be done in
+// (group.com.fuad.<your-suffix>) — that part still has to be done in
 // Xcode since it registers against your own Apple Developer account.
 
 // BUNDLE_ID_SUFFIX = yoursuffix

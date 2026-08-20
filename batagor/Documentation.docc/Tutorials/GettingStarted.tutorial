@@ -53,7 +53,7 @@
 
             @Step {
                 In the same tab, under **App Groups**, add/select the group the
-                script just wrote (`group.com.tudemaha.<your suffix>`) — the
+                script just wrote (`group.com.fuad.<your suffix>`) — the
                 capability entry and the plist string must match exactly.
             }
 

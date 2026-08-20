@@ -140,7 +140,7 @@ every change.
 
 The app and widget share media through an App Group tied to a signing team, so
 each developer needs their own bundle identifier/App Group/team rather than the
-committed team default (`com.tudemaha.lawar`). This is driven by a gitignored
+committed team default (`com.fuad.batagor`). This is driven by a gitignored
 `Config/Local.xcconfig` (copy `Config/Local.xcconfig.template` and fill in your
 `BUNDLE_ID_SUFFIX`/`DEVELOPMENT_TEAM`) — see `CONTRIBUTING.md` and `README.md`
 for the full walkthrough, including the still-manual step of adding/selecting

@@ -24,9 +24,9 @@
 		</dict>
 	</array>
 	<key>GroupAppBundleIdentifier</key>
-	<string>group.com.tudemaha.$(BUNDLE_ID_SUFFIX)</string>
+	<string>group.com.fuad.$(BUNDLE_ID_SUFFIX)</string>
 	<key>MainAppBundleIdentifier</key>
-	<string>com.tudemaha.$(BUNDLE_ID_SUFFIX)</string>
+	<string>com.fuad.$(BUNDLE_ID_SUFFIX)</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>SpaceGrotesk-Bold.ttf</string>

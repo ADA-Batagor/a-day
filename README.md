@@ -50,7 +50,7 @@ Since A Day relies on App Groups to share database records and media assets betw
 
 ### Step 2: Set Your Own Bundle Identifier
 
-The team-default bundle identifier (`com.tudemaha.lawar`) and its App Group are tied
+The team-default bundle identifier (`com.fuad.batagor`) and its App Group are tied
 to one signing team, so you need your own before the App Group will work under your
 account:
 
@@ -70,7 +70,7 @@ only need to add the App Group:
 2. Under **Targets**, select the **batagor** target.
 3. Navigate to the **Signing & Capabilities** tab.
 4. In the **App Groups** section, add/select the group matching Step 2's suffix
-   (`group.com.tudemaha.<your-suffix>`).
+   (`group.com.fuad.<your-suffix>`).
 5. Repeat the same App Groups step for the **widget** target.
 
 ### Step 4: Run the Application

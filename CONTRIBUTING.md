@@ -4,8 +4,8 @@
 
 The app and widget share media through an App Group, which is tied to a signing
 team — so to run on a physical device, everyone needs their **own** bundle
-identifier, App Group, and Team, not the team default (`com.tudemaha.lawar`,
-team `HRYT2ZQSJ5`). `PRODUCT_BUNDLE_IDENTIFIER`, the App Group entitlement, and
+identifier, App Group, and Team, not the team default (`com.fuad.batagor`,
+team `4D8MTY7F2R`). `PRODUCT_BUNDLE_IDENTIFIER`, the App Group entitlement, and
 `DEVELOPMENT_TEAM` all resolve from a `BUNDLE_ID_SUFFIX`/`DEVELOPMENT_TEAM` build
 setting defined in `Config/Shared.xcconfig`, which in turn optionally includes a
 gitignored `Config/Local.xcconfig` — so your personal values live in one local
@@ -29,7 +29,7 @@ and branch switches untouched, and there's no tracked file your personal ID
 could accidentally end up in.
 
 You still need to separately add the matching **App Groups** capability entry
-in Xcode's Signing & Capabilities for both targets (`group.com.tudemaha.<your-suffix>`)
+in Xcode's Signing & Capabilities for both targets (`group.com.fuad.<your-suffix>`)
 — that part registers against your own Apple Developer account and can't be
 scripted. See the in-app tutorial (`Documentation.docc/Tutorials`) for the full
 walkthrough.
