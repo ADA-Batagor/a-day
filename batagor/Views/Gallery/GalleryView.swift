@@ -21,6 +21,9 @@ struct GalleryView: View {
     @State private var isSelectionMode = false
     @State private var selectedMediaIds: Set<UUID> = []
 
+    // Settings
+    @State private var showSettings = false
+
     // Scroll variables
     @State private var isScrolled = false
 
@@ -167,38 +170,56 @@ struct GalleryView: View {
                 // explicit .glassEffect renders, keeping them visually separate.
                 // Explicit trailing padding gives exact control over the edge margin
                 // instead of relying on the system's default toolbar inset.
-                if !photos.isEmpty {
-                    if #available(iOS 26.0, *) {
-                        ToolbarItem(placement: .topBarTrailing) {
-                            HStack {
-                                CircleButton(icon: "gear") // placeholder — Settings screen wired up separately
-                                SelectButton(
-                                    isSelectionMode: $isSelectionMode,
-                                    selectedMediaIds: $selectedMediaIds,
-                                    swipedPhotoId: $swipedPhotoId
-                                )
-                            }
-                            .padding(.top, shouldShowScrolledState ? 0 : 8)
-                            .padding(.trailing, -20) // compensates the system's own ~36pt toolbar trailing inset to land at 16pt
-                            .frame(maxHeight: .infinity, alignment: .top)
-                            .animation(.easeInOut(duration: 0.2), value: shouldShowScrolledState)
-                        }
-                        .sharedBackgroundVisibility(.hidden)
-                    } else {
-                        ToolbarItem(placement: .topBarTrailing) {
-                            HStack {
+                // Settings is always reachable; Select only makes sense once there's
+                // something to select, so it's the only one gated on `!photos.isEmpty`.
+                if #available(iOS 26.0, *) {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        HStack {
+                            Button {
+                                showSettings = true
+                            } label: {
                                 CircleButton(icon: "gear")
+                            }
+                            if !photos.isEmpty {
                                 SelectButton(
                                     isSelectionMode: $isSelectionMode,
                                     selectedMediaIds: $selectedMediaIds,
                                     swipedPhotoId: $swipedPhotoId
                                 )
                             }
-                            .padding(.top, shouldShowScrolledState ? 0 : 8)
-                            .frame(maxHeight: .infinity, alignment: .top)
-                            .contentShape(Rectangle())
-                            .animation(.easeInOut(duration: 0.2), value: shouldShowScrolledState)
                         }
+                        .padding(.top, shouldShowScrolledState ? 0 : 8)
+                        // -20 compensates the system's own ~36pt toolbar trailing inset to
+                        // land at 16pt when the trailing item is the wider "Select" text
+                        // pill; a bare circular icon (lone gear with no photos, or the X
+                        // icon while selecting) needs +8 instead to land at the same
+                        // visual margin.
+                        .padding(.trailing, (photos.isEmpty || isSelectionMode) ? 8 : -20)
+                        .frame(maxHeight: .infinity, alignment: .top)
+                        .animation(.easeInOut(duration: 0.2), value: shouldShowScrolledState)
+                    }
+                    .sharedBackgroundVisibility(.hidden)
+                } else {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        HStack {
+                            Button {
+                                showSettings = true
+                            } label: {
+                                CircleButton(icon: "gear")
+                            }
+                            if !photos.isEmpty {
+                                SelectButton(
+                                    isSelectionMode: $isSelectionMode,
+                                    selectedMediaIds: $selectedMediaIds,
+                                    swipedPhotoId: $swipedPhotoId
+                                )
+                            }
+                        }
+                        .padding(.top, shouldShowScrolledState ? 0 : 8)
+                        .padding(.trailing, (photos.isEmpty || isSelectionMode) ? 8 : 0)
+                        .frame(maxHeight: .infinity, alignment: .top)
+                        .contentShape(Rectangle())
+                        .animation(.easeInOut(duration: 0.2), value: shouldShowScrolledState)
                     }
                 }
             }
@@ -220,6 +241,9 @@ struct GalleryView: View {
             }
             
             
+        }
+        .navigationDestination(isPresented: $showSettings) {
+            SettingsView()
         }
         .onChange(of: scenePhase) { oldPhase, newPhase in
             if newPhase == .active {
