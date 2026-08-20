@@ -71,33 +71,31 @@ struct GalleryView: View {
                     }
                 }
 
+                // Same fade technique as the top scroll overlay below, just flipped
+                // vertically: opaque lightBase nearest the edge, fading to clear
+                // going inward. Its own full-bounds ZStack layer (rather than a
+                // `.background` on the button row) so it sits above the list and
+                // reaches the true screen edge via `ignoresSafeArea`, independent of
+                // the button row's own safe-area-inset layout. Taller behind the
+                // selection action bar, shorter behind the lone capture button.
+                LinearGradient(
+                    stops: [
+                        Gradient.Stop(color: Color.lightBase, location: 0.0),
+                        Gradient.Stop(color: Color.lightBase.opacity(0.8), location: 0.4),
+                        Gradient.Stop(color: .clear, location: 1.0)
+                    ],
+                    startPoint: .bottom,
+                    endPoint: .top
+                )
+                .frame(height: isSelectionMode ? 140 : 100)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                .ignoresSafeArea(edges: .bottom)
+                .allowsHitTesting(false)
+                .animation(.easeInOut(duration: 0.2), value: isSelectionMode)
+
                 VStack {
                     Spacer()
                     bottomBar
-                }
-                .background(alignment: .bottom) {
-                    // Only needed pre-26: it hides the hard edge where scrollable
-                    // content meets the flat-color capture/selection buttons. On
-                    // iOS 26 those buttons are real glass and already blend with
-                    // whatever's behind them — painting this fade behind them instead
-                    // gives the glass a flat, opaque layer to sample, which visibly
-                    // shifts color as the real list content behind it changes during
-                    // scroll (most noticeable during overscroll bounce at the ends).
-                    if #unavailable(iOS 26.0) {
-                        VStack {
-                            Spacer()
-                            LinearGradient(
-                                stops: [
-                                    Gradient.Stop(color: Color.lightBase, location: 0.0),
-                                    Gradient.Stop(color: .clear, location: 0.5)
-                                ],
-                                startPoint: .bottom,
-                                endPoint: .top
-                            )
-                            .frame(height: 96)
-                        }
-                        .ignoresSafeArea()
-                    }
                 }
             }
             .onAppear {
@@ -275,34 +273,37 @@ struct GalleryView: View {
                 await DeletionService.shared.performCleanup(modelContext: modelContext)
             }
         }
-        .customConfirmationDialog(
+        .confirmationDialog(
             "Don't need this snap anymore?",
             isPresented: $isDeletingMedia,
-            actionTitle: "Delete",
-            actionColor: .redBase,
-            action: {
+            titleVisibility: .visible
+        ) {
+            Button("Delete", role: .destructive) {
                 if let media = mediaToDelete {
                     withAnimation {
                         deleteMedia(media)
                     }
                     mediaToDelete = nil
                 }
-            },
-            cancel: {
+            }
+            Button("Cancel", role: .cancel) {
                 mediaToDelete = nil
-            },
-            message:"This will delete it for good. This action can't be undone."
-        )
-        .customConfirmationDialog(
+            }
+        } message: {
+            Text("This will delete it for good. This action can't be undone.")
+        }
+        .confirmationDialog(
             "Don't need this \(selectedMediaIds.count) snaps anymore?",
             isPresented: $isDeletingSelectedMedia,
-            actionTitle: "Delete \(selectedMediaIds.count) Snaps",
-            actionColor: .redBase,
-            action: {
+            titleVisibility: .visible
+        ) {
+            Button("Delete \(selectedMediaIds.count) Snaps", role: .destructive) {
                 bulkDeleteMedia()
-            },
-            message: "This will delete it for good. This action can't be undone."
-        )
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This will delete it for good. This action can't be undone.")
+        }
         .fullScreenCover(isPresented: $showWidgetDetail) {
             navigationManager.resetDetailNavigation()
             widgetSelectedStorage = nil

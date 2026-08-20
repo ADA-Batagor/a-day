@@ -137,16 +137,18 @@ struct GalleryItem: View {
                 videoDuration = await TimeFormatter.getVideoDuration(from: storage.mainPath)
             }
         }
-        .customConfirmationDialog(
+        .confirmationDialog(
             "Don't need this snap anymore?",
             isPresented: $showDeleteConfirmation,
-            actionTitle: "Delete",
-            actionColor: .redBase,
-            action: {
+            titleVisibility: .visible
+        ) {
+            Button("Delete", role: .destructive) {
                 DeletionService.shared.manualDelete(modelContext: modelContext, storage: storage)
-            },
-            message: "This will delete it for good. This action can't be undone."
-        )
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This will delete it for good. This action can't be undone.")
+        }
         .toast(isShowing: $showSaveToast, message: saveToastMessage, icon: saveToastIcon)
         .alert(
             "Photos Access Required",
