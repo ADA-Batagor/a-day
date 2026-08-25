@@ -29,6 +29,8 @@ struct Camera: View {
     @State private var focusPoint: CGPoint?
     @State private var showFocusIndicator = false
     @State private var showStorageLimitAlert = false
+    @State private var showFlashToast = false
+    @State private var flashToastWorkItem: DispatchWorkItem?
     
     init() {
         _storages = Query(FetchDescriptor<Storage>())
@@ -107,9 +109,10 @@ struct Camera: View {
                                             }
                                         }
                                         .overlay(alignment: .top) {
-                                            if cameraViewModel.camera.flashMode == .auto {
+                                            if showFlashToast {
                                                 if #available(iOS 26, *) {
-                                                    Text("Flash Auto")
+                                                    Text(
+                                                        cameraViewModel.camera.flashMode.toastName)
                                                         .font(.spaceGroteskSemiBold(size: 16))
                                                         .foregroundStyle(
                                                             Color.adayDark
@@ -117,19 +120,25 @@ struct Camera: View {
                                                         .padding(.horizontal, 8)
                                                         .padding(.vertical, 4)
                                                         .glassEffect(
-                                                            .regular.tint(.adayLight.opacity(0.8)),
+                                                            .regular
+                                                                .tint(
+                                                                    cameraViewModel.camera.flashMode == .on ? .adaySecondary : .adayLight
+                                                                        .opacity(
+                                                                            0.6
+                                                                        )
+                                                                ),
                                                             in: .capsule
                                                         )
                                                         .padding(.top, 20)
                                                 } else {
-                                                    Text("Flash Auto")
+                                                    Text(cameraViewModel.camera.flashMode.toastName)
                                                         .font(.spaceGroteskSemiBold(size: 18))
                                                         .foregroundStyle(
                                                             Color.adayDark
                                                         )
                                                         .padding(.horizontal, 8)
                                                         .padding(.vertical, 4)
-                                                        .background(Color.adayLight.opacity(0.8))
+                                                        .background(cameraViewModel.camera.flashMode == .on ? Color.adaySecondary : Color.adayLight.opacity(0.8))
                                                         .clipShape(.capsule)
                                                         .padding(.top, 20)
                                                 }
@@ -173,6 +182,17 @@ struct Camera: View {
                                     
                                     Button {
                                         cameraViewModel.camera.cycleFlash()
+                                        withAnimation {
+                                            showFlashToast = true
+                                        }
+                                        flashToastWorkItem?.cancel()
+                                        let workItem = DispatchWorkItem {
+                                            withAnimation {
+                                                showFlashToast = false
+                                            }
+                                        }
+                                        flashToastWorkItem = workItem
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: workItem)
                                     } label: {
                                         Image(
                                             systemName: cameraViewModel.camera.flashMode.iconName
