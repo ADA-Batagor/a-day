@@ -18,6 +18,8 @@ struct GalleryList: View {
     @Binding var mediaToDelete: Storage?
     @Binding var isDeletingMedia: Bool
 
+    let onDeleteConfirmed: (Storage) -> Void
+
     private let topScrollThreshold: CGFloat = 155
     private let bottomScrollThreshold: CGFloat = 145
 
@@ -197,6 +199,23 @@ struct GalleryList: View {
                     }
                     .padding(.horizontal)
                     .padding(.vertical, 8)
+                    // Attached per-row rather than once at the GalleryView root so
+                    // iOS 26 anchors the dialog to the card that's actually being
+                    // deleted — a root-level modifier makes it emerge from the top
+                    // of the screen instead. Only the row matching `mediaToDelete`
+                    // ever reports `isPresented == true`.
+                    .confirmationDialog(
+                        "Don't need this snap anymore?",
+                        isPresented: deleteConfirmationBinding(for: photo),
+                        titleVisibility: .visible
+                    ) {
+                        Button("Delete", role: .destructive) {
+                            onDeleteConfirmed(photo)
+                        }
+                        Button("Cancel", role: .cancel) {}
+                    } message: {
+                        Text("This will delete it for good. This action can't be undone.")
+                    }
                     .listRowInsets(EdgeInsets())
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.lightBase)
@@ -226,6 +245,13 @@ struct GalleryList: View {
                     selectedMediaIds.remove(mediaId)
                 }
             }
+        )
+    }
+
+    private func deleteConfirmationBinding(for photo: Storage) -> Binding<Bool> {
+        Binding(
+            get: { isDeletingMedia && mediaToDelete?.id == photo.id },
+            set: { newValue in isDeletingMedia = newValue }
         )
     }
 

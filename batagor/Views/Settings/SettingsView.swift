@@ -59,8 +59,23 @@ struct SettingsView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 8) {
+                    // Dialog is attached to the row rather than the ScrollView so
+                    // iOS 26 anchors it to the tapped field; on the root view it
+                    // emerges from the top of the page instead.
                     SettingsRow(title: "Contact us") {
                         showContactConfirmation = true
+                    }
+                    .confirmationDialog(
+                        "Send Feedback",
+                        isPresented: $showContactConfirmation,
+                        titleVisibility: .visible
+                    ) {
+                        Button("Open Mail") {
+                            openMailContact()
+                        }
+                        Button("Cancel", role: .cancel) {}
+                    } message: {
+                        Text("This will open Mail to send us a message.")
                     }
                     Text("Got a bug or an idea? We'd love to hear from you.")
                         .font(.spaceGroteskBold(size: 13))
@@ -93,18 +108,6 @@ struct SettingsView: View {
                     }
                 }
             }
-        }
-        .confirmationDialog(
-            "Send Feedback",
-            isPresented: $showContactConfirmation,
-            titleVisibility: .visible
-        ) {
-            Button("Open Mail") {
-                openMailContact()
-            }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("This will open Mail to send us a message.")
         }
         .alert("Mail Not Available", isPresented: $showMailUnavailableAlert) {
             Button("Copy Email") {

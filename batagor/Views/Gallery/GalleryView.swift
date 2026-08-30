@@ -66,7 +66,12 @@ struct GalleryView: View {
                             swipedPhotoId: $swipedPhotoId,
                             isScrolled: $isScrolled,
                             mediaToDelete: $mediaToDelete,
-                            isDeletingMedia: $isDeletingMedia
+                            isDeletingMedia: $isDeletingMedia,
+                            onDeleteConfirmed: { media in
+                                withAnimation {
+                                    deleteMedia(media)
+                                }
+                            }
                         )
                     }
                 }
@@ -172,7 +177,7 @@ struct GalleryView: View {
                 // something to select, so it's the only one gated on `!photos.isEmpty`.
                 if #available(iOS 26.0, *) {
                     ToolbarItem(placement: .topBarTrailing) {
-                        HStack {
+                        HStack(spacing: isSelectionMode ? 0 : -16) {
                             Button {
                                 showSettings = true
                             } label: {
@@ -187,19 +192,14 @@ struct GalleryView: View {
                             }
                         }
                         .padding(.top, shouldShowScrolledState ? 0 : 8)
-                        // -20 compensates the system's own ~36pt toolbar trailing inset to
-                        // land at 16pt when the trailing item is the wider "Select" text
-                        // pill; a bare circular icon (lone gear with no photos, or the X
-                        // icon while selecting) needs +8 instead to land at the same
-                        // visual margin.
-                        .padding(.trailing, (photos.isEmpty || isSelectionMode) ? 8 : -20)
+                        .padding(.trailing, (photos.isEmpty || isSelectionMode) ? -8 : -20)
                         .frame(maxHeight: .infinity, alignment: .top)
                         .animation(.easeInOut(duration: 0.2), value: shouldShowScrolledState)
                     }
                     .sharedBackgroundVisibility(.hidden)
                 } else {
                     ToolbarItem(placement: .topBarTrailing) {
-                        HStack {
+                        HStack(spacing: 4) {
                             Button {
                                 showSettings = true
                             } label: {
@@ -273,37 +273,6 @@ struct GalleryView: View {
                 await DeletionService.shared.performCleanup(modelContext: modelContext)
             }
         }
-        .confirmationDialog(
-            "Don't need this snap anymore?",
-            isPresented: $isDeletingMedia,
-            titleVisibility: .visible
-        ) {
-            Button("Delete", role: .destructive) {
-                if let media = mediaToDelete {
-                    withAnimation {
-                        deleteMedia(media)
-                    }
-                    mediaToDelete = nil
-                }
-            }
-            Button("Cancel", role: .cancel) {
-                mediaToDelete = nil
-            }
-        } message: {
-            Text("This will delete it for good. This action can't be undone.")
-        }
-        .confirmationDialog(
-            "Don't need this \(selectedMediaIds.count) snaps anymore?",
-            isPresented: $isDeletingSelectedMedia,
-            titleVisibility: .visible
-        ) {
-            Button("Delete \(selectedMediaIds.count) Snaps", role: .destructive) {
-                bulkDeleteMedia()
-            }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("This will delete it for good. This action can't be undone.")
-        }
         .fullScreenCover(isPresented: $showWidgetDetail) {
             navigationManager.resetDetailNavigation()
             widgetSelectedStorage = nil
@@ -348,12 +317,15 @@ struct GalleryView: View {
 
             SelectionActionBar(
                 photos: photos,
-                selectedMediaIds: selectedMediaIds
-            ) {
-                if !selectedMediaIds.isEmpty {
-                    isDeletingSelectedMedia = true
-                }
-            }
+                selectedMediaIds: selectedMediaIds,
+                isConfirmingDelete: $isDeletingSelectedMedia,
+                onDeleteTapped: {
+                    if !selectedMediaIds.isEmpty {
+                        isDeletingSelectedMedia = true
+                    }
+                },
+                onDeleteConfirmed: bulkDeleteMedia
+            )
             .opacity(isSelectionMode ? 1 : 0)
             .scaleEffect(isSelectionMode ? 1 : 0.92)
             .allowsHitTesting(isSelectionMode)
