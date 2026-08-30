@@ -173,7 +173,7 @@ branches (a few days max — split into smaller PRs if a branch is growing).
 | `fix/` | Bug fixes |
 | `chore/` | Non-functional changes (deps, config, docs) |
 
-PRs target `main`, link the related GitHub issue (`Closes #22`), stay scoped to
+PRs target `main`, reference their Linear issue(s) (see below), stay scoped to
 one issue, and must be tested on a physical device before review (the simulator
 can't test camera or location). PR checklist:
 - [ ] Tested on device
@@ -185,3 +185,27 @@ can't test camera or location). PR checklist:
 
 Labels: `bug`, `feature`, `improvement`, `documentation`, `testing`,
 `area: camera`, `area: gallery`, `area: widget`, `area: deletion`.
+
+### Referencing Linear issues
+
+Work is tracked in Linear under `BAT-` keys. The Linear ↔ GitHub integration
+resolves a bare `#NN` against **Linear's** numbering, not GitHub's — so
+`Closes #41` renders as BAT-41 rather than GitHub issue 41, which is a different
+issue entirely. Always reference the `BAT-NN` key; never use `#NN`.
+
+- **Branch** — `<prefix>/bat-<nn>-<slug>`: take the slug from the issue's own
+  `gitBranchName` and swap in the right prefix from the table above, e.g.
+  `feature/bat-37-tech-liquid-glass-home`. Push under that exact name so Linear
+  links the branch to the issue.
+- **Commit subject** — Conventional Commits, single line, **no** Linear key and
+  no trailers: `type(scope): summary`. The key belongs on the branch and the PR;
+  no commit in this repo's history carries one, so adding it now would fork the
+  style for no gain.
+- **PR title** — `BAT-<nn>: <Human Readable Title>`. When a PR covers more than
+  one issue, join them with ` and `:
+  `BAT-37: Liquid Glass Home Screen and BAT-54: In-App Settings Screen`.
+- **PR description** — mention each bare `BAT-NN` key in the body so Linear
+  expands it into a full issue reference. Use a Linear magic word
+  (`Closes BAT-54`) only when the PR merging should actually close the issue;
+  a plain mention links without transitioning it. Where a GitHub issue also
+  exists, link it too — by full URL, never `#NN`.
