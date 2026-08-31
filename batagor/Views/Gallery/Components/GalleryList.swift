@@ -79,6 +79,11 @@ struct GalleryList: View {
                     } label: {
                         CircularSwipeButton(icon: "trash")
                     }
+                    // Without this, List treats the row's lone Button as the cell's
+                    // action and fires it from a tap anywhere in the row — including
+                    // the time/location labels — regardless of the button's own
+                    // `allowsHitTesting`. `.plain` keeps the tap target on the button.
+                    .buttonStyle(.plain)
 
                     ZStack(alignment: .trailing) {
                         HStack {
