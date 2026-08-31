@@ -47,7 +47,7 @@ struct DetailView: View {
     }
     
     @Namespace var toolbarNamespace
-
+    
     private var toolbarIconFont: Font {
         if #available(iOS 26, *) {
             .spaceGroteskSemiBold(size: 18)
@@ -55,11 +55,11 @@ struct DetailView: View {
             .spaceGroteskSemiBold(size: 22)
         }
     }
-
+    
     private var toolbarSpacing: CGFloat? {
         if #available(iOS 26, *) { nil } else { 25 }
     }
-
+    
     var body: some View {
         GeometryReader { geo in
             ZStack(alignment: .top) {
@@ -82,9 +82,9 @@ struct DetailView: View {
                                 .foregroundStyle(Color.darkBase)
                         }
                         .toolbarGlass()
-
+                        
                         Spacer()
-
+                        
                         if #available(iOS 26, *) {
                             GlassEffectContainer {
                                 toolbarActions
@@ -137,7 +137,7 @@ struct DetailView: View {
                                                 .padding(.top, 10)
                                                 .transition(.move(edge: .bottom).combined(with: .opacity))
                                         }
-
+                                        
                                     }
                                     .id(storage.id)
                                     .containerRelativeFrame(.horizontal)
@@ -342,7 +342,7 @@ struct DetailView: View {
                 }
                 
             }
-
+            
             if let selectedStorage = selectedStorage {
                 Button {
                     saveToPhotos(selectedStorage)
@@ -352,14 +352,14 @@ struct DetailView: View {
                         .foregroundStyle(Color.darkBase)
                 }
                 .toolbarGlassUnion(toolbarNamespace)
-
+                
                 ShareLink(item: selectedStorage.mainPath) {
                     Image(systemName: "square.and.arrow.up")
                         .font(toolbarIconFont)
                         .foregroundStyle(Color.darkBase)
                 }
                 .toolbarGlassUnion(toolbarNamespace)
-
+                
                 Button {
                     showDeleteConfirmation = true
                 } label: {
@@ -368,21 +368,26 @@ struct DetailView: View {
                         .foregroundStyle(Color.darkBase)
                 }
                 .toolbarGlassUnion(toolbarNamespace)
-                .customConfirmationDialog(
+                .confirmationDialog(
                     "Don't need this snap anymore?",
                     isPresented: $showDeleteConfirmation,
-                    actionTitle: "Delete",
-                    actionColor: .redBase,
-                    action: {
-                        DeletionService.shared.manualDelete(modelContext: modelContext, storage: selectedStorage)
-                    },
-                    cancel: {},
-                    message: "This will delete it for good. This action can't be undone."
-                )
+                    titleVisibility: .visible
+                ) {
+                    Button("Delete", role: .destructive) {
+                        DeletionService.shared
+                            .manualDelete(
+                                modelContext: modelContext,
+                                storage: selectedStorage
+                            )
+                    }
+                    Button("Cancel", role: .cancel) {}
+                } message: {
+                    Text("This will delete it for good. This action can't be undone.")
+                }
             }
         }
     }
-
+    
     private func saveToPhotos(_ selectedStorage: Storage) {
         Task {
             do {
@@ -415,7 +420,7 @@ private struct GlassButtonIfAvailable: ViewModifier {
 
 private struct GlassUnionButtonIfAvailable: ViewModifier {
     var namespace: Namespace.ID
-
+    
     func body(content: Content) -> some View {
         if #available(iOS 26, *) {
             content
@@ -431,7 +436,7 @@ private extension View {
     func toolbarGlass() -> some View {
         self.modifier(GlassButtonIfAvailable())
     }
-
+    
     func toolbarGlassUnion(_ namespace: Namespace.ID) -> some View {
         self.modifier(GlassUnionButtonIfAvailable(namespace: namespace))
     }
