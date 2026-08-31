@@ -16,13 +16,14 @@ struct CircleButton: View {
                 Image(systemName: icon)
                     .bold()
                     .frame(width: 44, height: 44)
+                    .foregroundStyle(Color.darkBase)
                     .glassEffect(.regular.interactive(), in: .circle)
             } else {
                 Image(systemName: icon)
                     .bold()
                     .frame(width: 44, height: 44)
-                    .background(.thickMaterial)
-                    .clipShape(.circle)
+                    .foregroundStyle(Color.darkBase)
+                    .contentShape(.circle)
             }
         }
     }

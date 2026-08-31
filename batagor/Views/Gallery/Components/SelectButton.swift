@@ -36,8 +36,7 @@ struct SelectButton: View {
                             .bold()
                             .frame(width: 44, height: 44)
                             .foregroundStyle(Color.darkBase)
-                            .background(.thickMaterial)
-                            .clipShape(.circle)
+                            .contentShape(.circle)
                     }
                 } else {
                     if #available(iOS 26.0, *) {

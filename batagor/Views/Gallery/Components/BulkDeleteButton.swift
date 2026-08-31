@@ -32,7 +32,7 @@ struct BulkDeleteButton: View {
                         .foregroundStyle(isDisabled ? Color.light50 : Color.darkBase)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 14)
-                        .background(isDisabled ? Color.dark20 : Color.blueBase)
+                        .background(isDisabled ? Color.dark20 : Color.redBase)
                         .cornerRadius(20)
                 }
             }
