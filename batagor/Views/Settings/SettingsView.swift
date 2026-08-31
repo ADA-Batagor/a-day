@@ -12,7 +12,8 @@ struct SettingsView: View {
     private static let feedbackEmail = "btgr.dev@gmail.com"
     private static let feedbackSubject = "A Day — Feedback"
 
-    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var navigationManager: NavigationManager
+
     @Environment(\.scenePhase) private var scenePhase
 
     @StateObject private var locationManager = LocationManager()
@@ -93,7 +94,7 @@ struct SettingsView: View {
             if #available(iOS 26.0, *) {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
-                        dismiss()
+                        navigationManager.navigate(to: .gallery)
                     } label: {
                         CircleButton(icon: "chevron.backward")
                     }
@@ -102,7 +103,7 @@ struct SettingsView: View {
             } else {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
-                        dismiss()
+                        navigationManager.navigate(to: .gallery)
                     } label: {
                         CircleButton(icon: "chevron.backward")
                     }
@@ -185,5 +186,6 @@ struct SettingsView: View {
 #Preview {
     NavigationStack {
         SettingsView()
+            .environmentObject(NavigationManager.shared)
     }
 }

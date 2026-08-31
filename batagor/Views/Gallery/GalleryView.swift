@@ -21,9 +21,6 @@ struct GalleryView: View {
     @State private var isSelectionMode = false
     @State private var selectedMediaIds: Set<UUID> = []
 
-    // Settings
-    @State private var showSettings = false
-
     // Scroll variables
     @State private var isScrolled = false
 
@@ -177,47 +174,21 @@ struct GalleryView: View {
                 // something to select, so it's the only one gated on `!photos.isEmpty`.
                 if #available(iOS 26.0, *) {
                     ToolbarItem(placement: .topBarTrailing) {
-                        HStack(spacing: isSelectionMode ? 0 : -16) {
-                            Button {
-                                showSettings = true
-                            } label: {
-                                CircleButton(icon: "gear")
-                            }
-                            if !photos.isEmpty {
-                                SelectButton(
-                                    isSelectionMode: $isSelectionMode,
-                                    selectedMediaIds: $selectedMediaIds,
-                                    swipedPhotoId: $swipedPhotoId
-                                )
-                            }
-                        }
-                        .padding(.top, shouldShowScrolledState ? 0 : 8)
-                        .padding(.trailing, (photos.isEmpty || isSelectionMode) ? -8 : -20)
-                        .frame(maxHeight: .infinity, alignment: .top)
-                        .animation(.easeInOut(duration: 0.2), value: shouldShowScrolledState)
+                        galleryControls(spacing: isSelectionMode ? 0 : -6)
+                            .padding(.top, shouldShowScrolledState ? 0 : 8)
+                            .padding(.trailing, (photos.isEmpty || isSelectionMode) ? -8 : -20)
+                            .frame(maxHeight: .infinity, alignment: .top)
+                            .animation(.easeInOut(duration: 0.2), value: shouldShowScrolledState)
                     }
                     .sharedBackgroundVisibility(.hidden)
                 } else {
                     ToolbarItem(placement: .topBarTrailing) {
-                        HStack(spacing: 4) {
-                            Button {
-                                showSettings = true
-                            } label: {
-                                CircleButton(icon: "gear")
-                            }
-                            if !photos.isEmpty {
-                                SelectButton(
-                                    isSelectionMode: $isSelectionMode,
-                                    selectedMediaIds: $selectedMediaIds,
-                                    swipedPhotoId: $swipedPhotoId
-                                )
-                            }
-                        }
-                        .padding(.top, shouldShowScrolledState ? 0 : 8)
-                        .padding(.trailing, (photos.isEmpty || isSelectionMode) ? 8 : 0)
-                        .frame(maxHeight: .infinity, alignment: .top)
-                        .contentShape(Rectangle())
-                        .animation(.easeInOut(duration: 0.2), value: shouldShowScrolledState)
+                        galleryControls(spacing: 4)
+                            .padding(.top, shouldShowScrolledState ? 0 : 8)
+                            .padding(.trailing, (photos.isEmpty || isSelectionMode) ? 8 : 0)
+                            .frame(maxHeight: .infinity, alignment: .top)
+                            .contentShape(Rectangle())
+                            .animation(.easeInOut(duration: 0.2), value: shouldShowScrolledState)
                     }
                 }
             }
@@ -239,9 +210,6 @@ struct GalleryView: View {
             }
             
             
-        }
-        .navigationDestination(isPresented: $showSettings) {
-            SettingsView()
         }
         .onChange(of: scenePhase) { oldPhase, newPhase in
             if newPhase == .active {
@@ -331,6 +299,28 @@ struct GalleryView: View {
             .allowsHitTesting(isSelectionMode)
         }
         .animation(.easeInOut(duration: 0.2), value: isSelectionMode)
+    }
+
+    /// Settings is always reachable; Select only makes sense once there's something
+    /// to select, so it's the only one gated on `!photos.isEmpty`.
+    /// `spacing` differs by path: the iOS 26 toolbar wraps a text-labelled button in
+    /// invisible inset that has to be cancelled; the pre-iOS 26 bar doesn't add it.
+    @ViewBuilder
+    private func galleryControls(spacing: CGFloat) -> some View {
+        HStack(spacing: spacing) {
+            Button {
+                navigationManager.navigate(to: .settings)
+            } label: {
+                CircleButton(icon: "gear")
+            }
+            if !photos.isEmpty {
+                SelectButton(
+                    isSelectionMode: $isSelectionMode,
+                    selectedMediaIds: $selectedMediaIds,
+                    swipedPhotoId: $swipedPhotoId
+                )
+            }
+        }
     }
 
     @ViewBuilder

@@ -27,6 +27,8 @@ struct batagorApp: App {
                         Camera()
                     case .gallery:
                         GalleryView()
+                    case .settings:
+                        SettingsView()
                     }
                 }
                 .onAppear {

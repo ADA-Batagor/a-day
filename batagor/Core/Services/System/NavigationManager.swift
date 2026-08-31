@@ -12,6 +12,7 @@ import SwiftUI
 enum AppDestination: Hashable {
     case camera
     case gallery
+    case settings
 }
 
 /// App-wide tab and detail-sheet navigation state.
