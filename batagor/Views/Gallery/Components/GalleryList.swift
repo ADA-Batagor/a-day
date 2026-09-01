@@ -18,10 +18,11 @@ struct GalleryList: View {
     @Binding var mediaToDelete: Storage?
     @Binding var isDeletingMedia: Bool
 
+    let onDeleteConfirmed: (Storage) -> Void
+
     private let topScrollThreshold: CGFloat = 155
     private let bottomScrollThreshold: CGFloat = 145
 
-    @State private var lastScrollPosition: CGFloat = 0
     @State private var swipeOffsets: [UUID: CGFloat] = [:]
     @State private var shouldAnimateSwipe: Set<UUID> = []
     @State private var isDragging: Set<UUID> = []
@@ -41,15 +42,11 @@ struct GalleryList: View {
                     GeometryReader { geo in
                         Color.clear
                             .onChange(of: geo.frame(in: .global).minY) { oldValue, newValue in
-                                let scrollDelta = newValue - oldValue
                                 let threshold: CGFloat = isScrolled ? topScrollThreshold : bottomScrollThreshold
                                 let isScrollable = newValue < threshold
 
-                                Task { @MainActor in
-                                    if isScrolled != isScrollable {
-                                        isScrolled = isScrollable
-                                    }
-                                    lastScrollPosition = scrollDelta
+                                if isScrolled != isScrollable {
+                                    isScrolled = isScrollable
                                 }
                             }
                     }
@@ -65,27 +62,25 @@ struct GalleryList: View {
                 }
 
                 ForEach(photos) { photo in
-                    ZStack(alignment: .trailing) {
-                        if swipedPhotoId == photo.id {
-                            HStack {
-                                Spacer()
-                                Button {
-                                    mediaToDelete = photo
-                                    isDeletingMedia = true
-                                    withAnimation {
-                                        swipeOffsets[photo.id] = 0
-                                        swipedPhotoId = nil
-                                    }
-                                } label: {
-                                    CircularSwipeButton(icon: "trash")
-                                }
-                                .padding(.trailing, 20)
-                                .scaleEffect(swipedPhotoId == photo.id ? 1.0 : 0.0)
-                                .opacity(swipedPhotoId == photo.id ? 1.0 : 0.0)
+                    // Kept permanently mounted (visibility driven only by scale/opacity/
+                    // hit-testing) instead of behind `if swipedPhotoId == photo.id`. A
+                    // lone .glassEffect view flashes on the frame it's first inserted
+                    // into the hierarchy while its backdrop sampling initializes —
+                    // structurally mounting it fresh on every swipe reveal was exactly
+                    // that moment. Staying mounted means that init cost happens once,
+                    // off-screen, and reveals are pure animated scale/opacity.
+                    let deleteButton = CircularSwipeButton(icon: "trash")
+                        .contentShape(.circle)
+                        .onTapGesture {
+                            mediaToDelete = photo
+                            isDeletingMedia = true
+                            withAnimation {
+                                swipeOffsets[photo.id] = 0
+                                swipedPhotoId = nil
                             }
-                            .animation(.interpolatingSpring(stiffness: 300, damping: 15).delay(0.1), value: swipedPhotoId)
                         }
 
+                    ZStack(alignment: .trailing) {
                         GalleryItem(
                             storage: photo,
                             isSelecting: $isSelectionMode,
@@ -123,9 +118,6 @@ struct GalleryList: View {
                                     if swipedPhotoId == photo.id && horizontalMovement < 0 {
                                         return
                                     }
-
-                                    var transaction = Transaction()
-                                    transaction.disablesAnimations = true
 
                                     if abs(horizontalMovement) > abs(verticalMovement) * 1.5 && horizontalMovement < 0 {
                                         swipeOffsets[photo.id] = max(horizontalMovement, -90)
@@ -186,9 +178,44 @@ struct GalleryList: View {
                                 }
                         )
                         .contentShape(Rectangle())
+
+                        HStack {
+                            Spacer()
+                            Group {
+                                if #available(iOS 26.0, *) {
+                                    GlassEffectContainer {
+                                        deleteButton
+                                    }
+                                } else {
+                                    deleteButton
+                                }
+                            }
+                            .padding(.trailing, 20)
+                            .scaleEffect(swipedPhotoId == photo.id ? 1.0 : 0.0)
+                            .opacity(swipedPhotoId == photo.id ? 1.0 : 0.0)
+                            .allowsHitTesting(swipedPhotoId == photo.id)
+                        }
+                        .animation(.interpolatingSpring(stiffness: 300, damping: 15).delay(0.1), value: swipedPhotoId)
                     }
                     .padding(.horizontal)
                     .padding(.vertical, 8)
+                    // Attached per-row rather than once at the GalleryView root so
+                    // iOS 26 anchors the dialog to the card that's actually being
+                    // deleted — a root-level modifier makes it emerge from the top
+                    // of the screen instead. Only the row matching `mediaToDelete`
+                    // ever reports `isPresented == true`.
+                    .confirmationDialog(
+                        "Don't need this snap anymore?",
+                        isPresented: deleteConfirmationBinding(for: photo),
+                        titleVisibility: .visible
+                    ) {
+                        Button("Delete", role: .destructive) {
+                            onDeleteConfirmed(photo)
+                        }
+                        Button("Cancel", role: .cancel) {}
+                    } message: {
+                        Text("This will delete it for good. This action can't be undone.")
+                    }
                     .listRowInsets(EdgeInsets())
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.lightBase)
@@ -218,6 +245,13 @@ struct GalleryList: View {
                     selectedMediaIds.remove(mediaId)
                 }
             }
+        )
+    }
+
+    private func deleteConfirmationBinding(for photo: Storage) -> Binding<Bool> {
+        Binding(
+            get: { isDeletingMedia && mediaToDelete?.id == photo.id },
+            set: { newValue in isDeletingMedia = newValue }
         )
     }
 

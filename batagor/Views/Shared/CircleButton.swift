@@ -11,11 +11,21 @@ struct CircleButton: View {
     var icon: String
     
     var body: some View {
-        Image(systemName: icon)
-            .bold()
-            .padding(15)
-            .background(.thickMaterial)
-            .clipShape(.circle)
+        Group {
+            if #available(iOS 26.0, *) {
+                Image(systemName: icon)
+                    .bold()
+                    .frame(width: 44, height: 44)
+                    .foregroundStyle(Color.darkBase)
+                    .glassEffect(.regular.interactive(), in: .circle)
+            } else {
+                Image(systemName: icon)
+                    .bold()
+                    .frame(width: 44, height: 44)
+                    .foregroundStyle(Color.darkBase)
+                    .contentShape(.circle)
+            }
+        }
     }
 }
 

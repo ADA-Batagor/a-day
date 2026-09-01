@@ -15,14 +15,28 @@ struct BulkDeleteButton: View {
         Button {
             action()
         } label: {
-            Image(systemName: "trash")
-                .font(.spaceGroteskBold(size: 17))
-                .foregroundStyle(Color.darkBase)
+            Group {
+                if #available(iOS 26.0, *) {
+                    Image(systemName: "trash")
+                        .font(.spaceGroteskBold(size: 17))
+                        .foregroundStyle(isDisabled ? Color.light50 : Color.darkBase)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 14)
+                        .glassEffect(
+                            isDisabled ? .regular.tint(Color.dark20).interactive() : .regular.tint(Color.redBase).interactive(),
+                            in: RoundedRectangle(cornerRadius: 20)
+                        )
+                } else {
+                    Image(systemName: "trash")
+                        .font(.spaceGroteskBold(size: 17))
+                        .foregroundStyle(isDisabled ? Color.light50 : Color.darkBase)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 14)
+                        .background(isDisabled ? Color.dark20 : Color.redBase)
+                        .cornerRadius(20)
+                }
+            }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 14)
-        .background(Color.blueBase)
-        .cornerRadius(20)
         .disabled(isDisabled)
     }
 }

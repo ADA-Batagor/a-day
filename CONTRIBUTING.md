@@ -46,11 +46,17 @@ We use **trunk-based development**. All work merges into `main` via short-lived 
 | `fix/` | Bug fixes |
 | `chore/` | Non-functional changes (deps, config, docs) |
 
-Example: `fix/deletion-background-interval`
+Branches carry their Linear issue key: `<prefix>/bat-<nn>-<slug>`, taking the slug from
+the issue's own `gitBranchName`. Example: `fix/bat-22-deletion-background-interval`
 
 ## Pull Requests
 
-- Link the related GitHub issue in the PR description (e.g. `Closes #22`)
+- Title the PR `BAT-<nn>: <Human Readable Title>`, joining multiple issues with ` and `
+  (e.g. `BAT-37: Liquid Glass Home Screen and BAT-54: In-App Settings Screen`)
+- Reference the Linear issue in the description by its bare key (e.g. `BAT-54`) so Linear
+  expands it into a full reference. Where a GitHub issue also exists, link it as well —
+  but by full URL, because a bare `#22` resolves against **Linear's** numbering rather
+  than GitHub's and will point at the wrong issue
 - Keep scope small — one issue per PR
 - Test on a physical device before requesting review (simulator cannot test camera or location)
 - PRs must target `main`

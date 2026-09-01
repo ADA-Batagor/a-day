@@ -23,16 +23,44 @@ struct SelectButton: View {
                 isSelectionMode = true
             }
         } label: {
-            Text(isSelectionMode ? "Cancel" : "Select")
-                .padding(.horizontal, 15)
-                .padding(.vertical, 7)
-                .foregroundStyle(isSelectionMode ? Color.lightBase : Color.darkBase)
-                .background(isSelectionMode ? Color.yellow60 : Color.yellow30)
-                .cornerRadius(40)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 40)
-                        .stroke(Color.yellow60, lineWidth: 1)
-                )
+            Group {
+                if isSelectionMode {
+                    if #available(iOS 26.0, *) {
+                        Image(systemName: "xmark")
+                            .bold()
+                            .frame(width: 44, height: 44)
+                            .foregroundStyle(Color.darkBase)
+                            .glassEffect(.regular.interactive(), in: .circle)
+                    } else {
+                        Image(systemName: "xmark")
+                            .bold()
+                            .frame(width: 44, height: 44)
+                            .foregroundStyle(Color.darkBase)
+                            .contentShape(.circle)
+                    }
+                } else {
+                    if #available(iOS 26.0, *) {
+                        Text("Select")
+                            .bold()
+                            .padding(.horizontal, 15)
+                            .frame(height: 44)
+                            .foregroundStyle(Color.darkBase)
+                            .glassEffect(.regular.interactive(), in: .capsule)
+                    } else {
+                        Text("Select")
+                            .bold()
+                            .padding(.horizontal, 15)
+                            .frame(height: 44)
+                            .foregroundStyle(Color.darkBase)
+                            .background(Color.yellow30)
+                            .cornerRadius(40)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 40)
+                                    .stroke(Color.yellow60, lineWidth: 1)
+                            )
+                    }
+                }
+            }
         }
     }
 }

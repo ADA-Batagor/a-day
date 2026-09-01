@@ -63,58 +63,41 @@ struct GalleryView: View {
                             swipedPhotoId: $swipedPhotoId,
                             isScrolled: $isScrolled,
                             mediaToDelete: $mediaToDelete,
-                            isDeletingMedia: $isDeletingMedia
+                            isDeletingMedia: $isDeletingMedia,
+                            onDeleteConfirmed: { media in
+                                withAnimation {
+                                    deleteMedia(media)
+                                }
+                            }
                         )
                     }
                 }
+
+                // Same fade technique as the top scroll overlay below, just flipped
+                // vertically: opaque lightBase nearest the edge, fading to clear
+                // going inward. Its own full-bounds ZStack layer (rather than a
+                // `.background` on the button row) so it sits above the list and
+                // reaches the true screen edge via `ignoresSafeArea`, independent of
+                // the button row's own safe-area-inset layout. Taller behind the
+                // selection action bar, shorter behind the lone capture button.
+                LinearGradient(
+                    stops: [
+                        Gradient.Stop(color: Color.lightBase, location: 0.0),
+                        Gradient.Stop(color: Color.lightBase.opacity(0.8), location: 0.4),
+                        Gradient.Stop(color: .clear, location: 1.0)
+                    ],
+                    startPoint: .bottom,
+                    endPoint: .top
+                )
+                .frame(height: isSelectionMode ? 140 : 100)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                .ignoresSafeArea(edges: .bottom)
+                .allowsHitTesting(false)
+                .animation(.easeInOut(duration: 0.2), value: isSelectionMode)
 
                 VStack {
                     Spacer()
-                    if isSelectionMode {
-                        SelectionActionBar(
-                            photos: photos,
-                            selectedMediaIds: selectedMediaIds
-                        ) {
-                            if !selectedMediaIds.isEmpty {
-                                isDeletingSelectedMedia = true
-                            }
-                        }
-                    } else {
-                        CaptureButton(photoCount: photos.count, mediaLimit: MEDIA_LIMIT) {
-                            if photos.count < MEDIA_LIMIT {
-                                navigationManager.navigate(to: .camera)
-                            } else {
-                                if showLimitToast {
-                                    showLimitToast = false
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                                        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                                            showLimitToast = true
-                                        }
-                                    }
-                                } else {
-                                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                                        showLimitToast = true
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                }
-                .background(alignment: .bottom) {
-                    VStack {
-                        Spacer()
-                        LinearGradient(
-                            stops: [
-                                Gradient.Stop(color: Color.lightBase, location: 0.0),
-                                Gradient.Stop(color: .clear, location: 0.5)
-                            ],
-                            startPoint: .bottom,
-                            endPoint: .top
-                        )
-                        .frame(height: 96)
-                    }
-                    .ignoresSafeArea()
+                    bottomBar
                 }
             }
             .onAppear {
@@ -166,36 +149,48 @@ struct GalleryView: View {
             .background(Color.lightBase)
             .navigationBarTitleDisplayMode(shouldShowScrolledState ? .inline : .large)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    VStack(alignment: .leading, spacing: 0) {
-                        if !shouldShowScrolledState {
-                            Text("Today")
-                                .font(.spaceGroteskBold(size: 34))
-                                .foregroundStyle(Color.darkerBlueBase)
-                                .transition(.opacity.combined(with: .move(edge: .top)))
-                        }
-                        
-                        GalleryCount(currentCount: photos.count)
+                // iOS 26 wraps ToolbarItem content in an auto-sized Liquid Glass
+                // background by default, which clips this taller title+count block
+                // down to a small pill. `.sharedBackgroundVisibility(.hidden)` opts
+                // it out of that grouping so it renders at full size, as documented at
+                // https://iifx.dev/en/articles/457777731/bypassing-the-liquid-glass-left-aligned-toolbar-text-in-swiftui-ios-26
+                if #available(iOS 26.0, *) {
+                    ToolbarItem(placement: .topBarLeading) {
+                        titleToolbarContent
                     }
-                    .padding(.top, shouldShowScrolledState ? 0 : 70)
-                    .animation(.easeInOut(duration: 0.2), value: shouldShowScrolledState)
+                    .sharedBackgroundVisibility(.hidden)
+                } else {
+                    ToolbarItem(placement: .topBarLeading) {
+                        titleToolbarContent
+                    }
                 }
-                
-                if !photos.isEmpty {
+
+                // One item holding both buttons, with `.sharedBackgroundVisibility(.hidden)`
+                // so iOS 26 doesn't glass the whole group — only each button's own
+                // explicit .glassEffect renders, keeping them visually separate.
+                // Explicit trailing padding gives exact control over the edge margin
+                // instead of relying on the system's default toolbar inset.
+                // Settings is always reachable; Select only makes sense once there's
+                // something to select, so it's the only one gated on `!photos.isEmpty`.
+                if #available(iOS 26.0, *) {
                     ToolbarItem(placement: .topBarTrailing) {
-                        VStack {
-                            SelectButton(
-                                isSelectionMode: $isSelectionMode,
-                                selectedMediaIds: $selectedMediaIds,
-                                swipedPhotoId: $swipedPhotoId
-                            )
-                        }
-                        .padding(.top, shouldShowScrolledState ? 0 : 25)
-                        .contentShape(Rectangle())
-                        .animation(.easeInOut(duration: 0.2), value: shouldShowScrolledState)
+                        galleryControls(spacing: isSelectionMode ? 0 : -6)
+                            .padding(.top, shouldShowScrolledState ? 0 : 8)
+                            .padding(.trailing, (photos.isEmpty || isSelectionMode) ? -8 : -20)
+                            .frame(maxHeight: .infinity, alignment: .top)
+                            .animation(.easeInOut(duration: 0.2), value: shouldShowScrolledState)
+                    }
+                    .sharedBackgroundVisibility(.hidden)
+                } else {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        galleryControls(spacing: 4)
+                            .padding(.top, shouldShowScrolledState ? 0 : 8)
+                            .padding(.trailing, (photos.isEmpty || isSelectionMode) ? 8 : 0)
+                            .frame(maxHeight: .infinity, alignment: .top)
+                            .contentShape(Rectangle())
+                            .animation(.easeInOut(duration: 0.2), value: shouldShowScrolledState)
                     }
                 }
-                
             }
             .overlay(alignment: .top) {
                 if shouldShowScrolledState {
@@ -246,34 +241,6 @@ struct GalleryView: View {
                 await DeletionService.shared.performCleanup(modelContext: modelContext)
             }
         }
-        .customConfirmationDialog(
-            "Don't need this snap anymore?",
-            isPresented: $isDeletingMedia,
-            actionTitle: "Delete",
-            actionColor: .redBase,
-            action: {
-                if let media = mediaToDelete {
-                    withAnimation {
-                        deleteMedia(media)
-                    }
-                    mediaToDelete = nil
-                }
-            },
-            cancel: {
-                mediaToDelete = nil
-            },
-            message:"This will delete it for good. This action can't be undone."
-        )
-        .customConfirmationDialog(
-            "Don't need this \(selectedMediaIds.count) snaps anymore?",
-            isPresented: $isDeletingSelectedMedia,
-            actionTitle: "Delete \(selectedMediaIds.count) Snaps",
-            actionColor: .redBase,
-            action: {
-                bulkDeleteMedia()
-            },
-            message: "This will delete it for good. This action can't be undone."
-        )
         .fullScreenCover(isPresented: $showWidgetDetail) {
             navigationManager.resetDetailNavigation()
             widgetSelectedStorage = nil
@@ -282,9 +249,97 @@ struct GalleryView: View {
                 DetailView(selectedStorage: .constant(storage), showCover: $showWidgetDetail)
             }
         }
-        
+
     }
-    
+
+    @ViewBuilder
+    private var bottomBar: some View {
+        // Both bars stay mounted permanently and cross-fade via opacity/scale
+        // instead of an `if isSelectionMode` swap. A freshly-inserted
+        // .glassEffect() view flashes on the frame it's first inserted while
+        // its backdrop sampling initializes (same issue fixed for the
+        // per-photo swipe-delete button in GalleryList) — staying mounted
+        // avoids re-triggering that flash on every selection-mode toggle.
+        ZStack {
+            CaptureButton(photoCount: photos.count, mediaLimit: MEDIA_LIMIT) {
+                if photos.count < MEDIA_LIMIT {
+                    navigationManager.navigate(to: .camera)
+                } else {
+                    if showLimitToast {
+                        showLimitToast = false
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                showLimitToast = true
+                            }
+                        }
+                    } else {
+                        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                            showLimitToast = true
+                        }
+                    }
+                }
+            }
+            .opacity(isSelectionMode ? 0 : 1)
+            .scaleEffect(isSelectionMode ? 0.92 : 1)
+            .allowsHitTesting(!isSelectionMode)
+
+            SelectionActionBar(
+                photos: photos,
+                selectedMediaIds: selectedMediaIds,
+                isConfirmingDelete: $isDeletingSelectedMedia,
+                onDeleteTapped: {
+                    if !selectedMediaIds.isEmpty {
+                        isDeletingSelectedMedia = true
+                    }
+                },
+                onDeleteConfirmed: bulkDeleteMedia
+            )
+            .opacity(isSelectionMode ? 1 : 0)
+            .scaleEffect(isSelectionMode ? 1 : 0.92)
+            .allowsHitTesting(isSelectionMode)
+        }
+        .animation(.easeInOut(duration: 0.2), value: isSelectionMode)
+    }
+
+    /// Settings is always reachable; Select only makes sense once there's something
+    /// to select, so it's the only one gated on `!photos.isEmpty`.
+    /// `spacing` differs by path: the iOS 26 toolbar wraps a text-labelled button in
+    /// invisible inset that has to be cancelled; the pre-iOS 26 bar doesn't add it.
+    @ViewBuilder
+    private func galleryControls(spacing: CGFloat) -> some View {
+        HStack(spacing: spacing) {
+            Button {
+                navigationManager.navigate(to: .settings)
+            } label: {
+                CircleButton(icon: "gear")
+            }
+            if !photos.isEmpty {
+                SelectButton(
+                    isSelectionMode: $isSelectionMode,
+                    selectedMediaIds: $selectedMediaIds,
+                    swipedPhotoId: $swipedPhotoId
+                )
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var titleToolbarContent: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            if !shouldShowScrolledState {
+                Text("Today")
+                    .font(.spaceGroteskBold(size: 34))
+                    .foregroundStyle(Color.darkerBlueBase)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+
+            GalleryCount(currentCount: photos.count)
+        }
+        .padding(.top, shouldShowScrolledState ? 0 : 70)
+        .animation(.easeInOut(duration: 0.2), value: shouldShowScrolledState)
+        .fixedSize()
+    }
+
     private func deleteMedia(_ media: Storage) {
         modelContext.delete(media)
         do {
