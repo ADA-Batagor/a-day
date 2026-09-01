@@ -16,9 +16,27 @@ permissions:
 
 jobs:
   build:
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
+
+      - name: Select Xcode 26
+        run: |
+          set -euo pipefail
+          # The Liquid Glass views (glassEffect, GlassEffectContainer,
+          # glassEffectUnion, .buttonStyle(.glass)) are iOS 26 SDK symbols. They
+          # sit behind `if #available(iOS 26, *)` so they don't raise the
+          # deployment target, but they still have to *compile*, which needs an
+          # Xcode that ships the iOS 26 SDK. Pin it rather than trusting the
+          # image default.
+          xcode=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -n 1 || true)
+          if [ -z "$xcode" ]; then
+            echo "No Xcode 26 found on the runner image" >&2
+            ls -d /Applications/Xcode*.app >&2
+            exit 1
+          fi
+          sudo xcode-select -s "$xcode"
+          xcodebuild -version
 
       - name: Build documentation archive
         run: |
