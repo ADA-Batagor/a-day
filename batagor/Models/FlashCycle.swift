@@ -45,4 +45,12 @@ enum FlashCycle: Int, CaseIterable {
         case .off:  return "bolt.slash.fill"
         }
     }
+    
+    var toastName: String {
+        switch self {
+        case .auto: return "Flash Auto"
+        case .off: return "Flash Off"
+        case .on: return "Flash On"
+        }
+    }
 }
