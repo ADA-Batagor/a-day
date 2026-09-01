@@ -69,41 +69,18 @@ struct GalleryList: View {
                     // structurally mounting it fresh on every swipe reveal was exactly
                     // that moment. Staying mounted means that init cost happens once,
                     // off-screen, and reveals are pure animated scale/opacity.
-                    let deleteButton = Button {
-                        mediaToDelete = photo
-                        isDeletingMedia = true
-                        withAnimation {
-                            swipeOffsets[photo.id] = 0
-                            swipedPhotoId = nil
+                    let deleteButton = CircularSwipeButton(icon: "trash")
+                        .contentShape(.circle)
+                        .onTapGesture {
+                            mediaToDelete = photo
+                            isDeletingMedia = true
+                            withAnimation {
+                                swipeOffsets[photo.id] = 0
+                                swipedPhotoId = nil
+                            }
                         }
-                    } label: {
-                        CircularSwipeButton(icon: "trash")
-                    }
-                    // Without this, List treats the row's lone Button as the cell's
-                    // action and fires it from a tap anywhere in the row — including
-                    // the time/location labels — regardless of the button's own
-                    // `allowsHitTesting`. `.plain` keeps the tap target on the button.
-                    .buttonStyle(.plain)
 
                     ZStack(alignment: .trailing) {
-                        HStack {
-                            Spacer()
-                            Group {
-                                if #available(iOS 26.0, *) {
-                                    GlassEffectContainer {
-                                        deleteButton
-                                    }
-                                } else {
-                                    deleteButton
-                                }
-                            }
-                            .padding(.trailing, 20)
-                            .scaleEffect(swipedPhotoId == photo.id ? 1.0 : 0.0)
-                            .opacity(swipedPhotoId == photo.id ? 1.0 : 0.0)
-                            .allowsHitTesting(swipedPhotoId == photo.id)
-                        }
-                        .animation(.interpolatingSpring(stiffness: 300, damping: 15).delay(0.1), value: swipedPhotoId)
-
                         GalleryItem(
                             storage: photo,
                             isSelecting: $isSelectionMode,
@@ -201,6 +178,24 @@ struct GalleryList: View {
                                 }
                         )
                         .contentShape(Rectangle())
+
+                        HStack {
+                            Spacer()
+                            Group {
+                                if #available(iOS 26.0, *) {
+                                    GlassEffectContainer {
+                                        deleteButton
+                                    }
+                                } else {
+                                    deleteButton
+                                }
+                            }
+                            .padding(.trailing, 20)
+                            .scaleEffect(swipedPhotoId == photo.id ? 1.0 : 0.0)
+                            .opacity(swipedPhotoId == photo.id ? 1.0 : 0.0)
+                            .allowsHitTesting(swipedPhotoId == photo.id)
+                        }
+                        .animation(.interpolatingSpring(stiffness: 300, damping: 15).delay(0.1), value: swipedPhotoId)
                     }
                     .padding(.horizontal)
                     .padding(.vertical, 8)
