@@ -88,31 +88,33 @@ should never change after the fact. A tag + release gives us a permanent, audita
 
 ## 4. Release Flow
 
-Release commits go through the same PR flow as everything else (see `CONTRIBUTING.md`) — nobody
-pushes to `main` directly.
+Use `scripts/release.sh` from the repo root. The script must be run on `main` — it
+validates this, checks for a clean working tree, and confirms you're in sync with
+`origin/main` before touching anything.
 
 ```bash
-# 1. Bump the version file on a branch
-#    Edit Config/Version.xcconfig: MARKETING_VERSION = 1.1.0, CURRENT_PROJECT_VERSION = 1
-
-git checkout -b chore/bat-XX-release-1.1.0
-git add Config/Version.xcconfig
-git commit -m "chore: bump version to 1.1.0"
-git push -u origin chore/bat-XX-release-1.1.0
-
-# 2. Open a PR for that branch on GitHub, get it reviewed, and merge it to main.
-
-# 3. Tag the merge commit on main
-git checkout main && git pull
-git tag -a v1.1.0 -m "Release 1.1.0"
-git push origin v1.1.0
+./scripts/release.sh minor     # 1.1.0 → 1.2.0
+./scripts/release.sh patch     # 1.1.0 → 1.1.1
+./scripts/release.sh major     # 1.1.0 → 2.0.0
+./scripts/release.sh build     # build 1 → 2  (no tag, no CI — see §6)
+./scripts/release.sh patch --dry-run   # preview without making any changes
 ```
 
-Pushing the tag triggers the release pipeline (below).
+What the script does automatically, in order:
 
-For subsequent builds against the same marketing version (bug-fix TestFlight builds before the
-App Store release), only bump `CURRENT_PROJECT_VERSION` and repeat steps 1–3 with a build-specific
-tag if you want each upload tagged (optional — many teams only tag the final App Store release).
+1. **Guardrails** — exits early if not on `main`, working tree is dirty, or local is
+   out of sync with `origin/main`.
+2. **Bump** — computes the new `MARKETING_VERSION` (and resets `CURRENT_PROJECT_VERSION`
+   to `1` for `major`/`minor`/`patch`; increments it for `build`).
+3. **Changelog** — generates a `CHANGELOG.md` entry from `git log --oneline --no-merges`
+   since the last tag, creating the file on first run.
+4. **Commit** — stages `Config/Version.xcconfig` and `CHANGELOG.md`, commits with
+   `chore: bump version to X.Y.Z`.
+5. **Push main** — pushes the commit directly to `main`.
+6. **Tag** (`major`/`minor`/`patch` only) — creates an annotated `vX.Y.Z` tag and
+   pushes it, which triggers the CI release pipeline (see §5).
+
+`build` bumps skip step 6 — no tag is created and CI is not triggered.
 
 ## 5. CI/CD: GitHub Actions
 
@@ -192,6 +194,10 @@ then, archives are exported from Xcode manually.
 If a submitted build is **rejected** by App Store Review, bump only the **build number**
 (`CURRENT_PROJECT_VERSION`) and resubmit — do **not** bump `MARKETING_VERSION`.
 
+```bash
+./scripts/release.sh build   # increments CURRENT_PROJECT_VERSION only, no tag
+```
+
 Rationale: a rejection means that version never reached users, so there's nothing to communicate
 a "fix" against. Bumping the patch version would burn a version number on something users never
 experienced and break the clean release progression (e.g. `1.0.1 → 1.1.0`, not
@@ -211,11 +217,11 @@ was intended to ship.
 
 ## 7. Quick Reference
 
-| Concept            | Where it lives                                            | Who/what updates it                                      |
-| ------------------ | --------------------------------------------------------- | -------------------------------------------------------- |
-| SemVer string      | `MARKETING_VERSION` in `Config/Version.xcconfig`          | Human, at release-cut time                               |
-| Build number       | `CURRENT_PROJECT_VERSION` in `Config/Version.xcconfig`    | Human, resets to 1 per marketing version, +1 per rebuild |
-| Widget version     | Same file, via `Config/Shared.xcconfig` (project-level)   | Automatic (inherited by both targets)                    |
-| Release checkpoint | Git tag `vMAJOR.MINOR.PATCH` on `main`                    | Human, after the version-bump PR merges                  |
-| Shipped binary     | GitHub Release assets (`.ipa`, `dSYM`) on the tag         | GitHub Actions, on tag push                              |
-| Release trigger    | `push: tags: 'v*.*.*'` in `.github/workflows/release.yml` | Automatic                                                |
+| Concept            | Where it lives                                            | Who/what updates it                                          |
+| ------------------ | --------------------------------------------------------- | ------------------------------------------------------------ |
+| SemVer string      | `MARKETING_VERSION` in `Config/Version.xcconfig`          | `scripts/release.sh [major\|minor\|patch]`                   |
+| Build number       | `CURRENT_PROJECT_VERSION` in `Config/Version.xcconfig`    | `scripts/release.sh build` (or resets to 1 on version bump) |
+| Widget version     | Same file, via `Config/Shared.xcconfig` (project-level)   | Automatic (inherited by both targets)                        |
+| Release checkpoint | Git tag `vMAJOR.MINOR.PATCH` on `main`                    | `scripts/release.sh` (tagged + pushed after commit)          |
+| Shipped binary     | GitHub Release assets (`.ipa`, `dSYM`) on the tag         | GitHub Actions, on tag push                                  |
+| Release trigger    | `push: tags: 'v*.*.*'` in `.github/workflows/release.yml` | Automatic                                                    |
