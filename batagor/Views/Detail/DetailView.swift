@@ -143,13 +143,13 @@ struct DetailView: View {
                                     .containerRelativeFrame(.horizontal)
                                     .frame(maxHeight: .infinity)
                                     .contentShape(Rectangle())
-                                    .simultaneousGesture(simultaneousGesture())
                                     .toast(isShowing: $showSaveToast, message: saveToastMessage, icon: saveToastIcon)
                                 }
                             }
                             .scrollTargetLayout()
                         }
                         .scrollDisabled(blockHorizontal)
+                        .simultaneousGesture(simultaneousGesture())
                         .scrollPosition(id: $selectedThumbnail)
                         .scrollTargetBehavior(.viewAligned(limitBehavior: .always))
                         .onAppear {
