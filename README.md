@@ -99,11 +99,16 @@ batagor/
 │   │   ├── Gallery/             # Gallery library grid
 │   │   └── Shared/              # Shared/Reusable UI components
 │   └── Resources/               # Assets, Fonts, & Plists
+├── Config/                      # Build configurations & versioning
+│   ├── Shared.xcconfig          # Base config for all targets
+│   ├── Version.xcconfig         # Source of truth for app/widget versions
+│   └── Local.xcconfig.template  # Template for personal signing overrides
 └── widget/                      # Home Screen Widget Extension
 ```
 
 ### What goes into each directory:
 
+- `Config/`: Build configuration files, including `Version.xcconfig` which acts as the version manager and single source of truth for the app and widget versions (`MARKETING_VERSION` and `CURRENT_PROJECT_VERSION`).
 - `Core/Helpers/`: Pure utility structures containing static methods for transformations (e.g., formatting dates, configuring typography).
 - `Core/Services/`: Stateless or stateful managers that perform operations. These interface with hardware/system APIs (Camera, Location, Haptics) or manage database contexts.
 - `Extensions/`: Custom functionality added to standard framework types (e.g., helper properties on `Color` or `Font`).
@@ -141,3 +146,14 @@ Services are classified into two sub-categories:
 
 - **Suffix**: `View` (e.g., `GalleryView`, `GalleryItemView`), except for the primary container entry points if concise (e.g., `Camera`).
 - **Design**: Structs conforming to `View`, using `@EnvironmentObject` or `@StateObject` to consume Managers or ViewModels.
+
+---
+
+## 🏷️ Versioning & Releases
+
+This project uses Semantic Versioning (`MAJOR.MINOR.PATCH`).
+
+- **Version Manager**: The single source of truth for both the main app and widget versions is `Config/Version.xcconfig`. When releasing a new version or bumping a build number, edit `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` in this file.
+- **Release Flow**: We use **tags and GitHub Releases** instead of per-version branches. Once `Version.xcconfig` is updated via a PR, tag the `main` branch with the new version (e.g., `v1.1.0`) and push it. This triggers a GitHub Actions workflow that automatically builds the `.ipa` and publishes a GitHub Release.
+
+For full rules around build number resets, tagging, and handling App Store rejections, refer to [VERSIONING.md](VERSIONING.md).

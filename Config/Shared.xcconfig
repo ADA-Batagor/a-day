@@ -5,4 +5,5 @@
 BUNDLE_ID_SUFFIX = batagor
 DEVELOPMENT_TEAM = 4D8MTY7F2R
 
+#include "Version.xcconfig"
 #include? "Local.xcconfig"
