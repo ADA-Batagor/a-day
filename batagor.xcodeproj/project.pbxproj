@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		069752FE30528B4E00AD21C3 /* SwiftData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3F764C8E2EB0A96C0028EDD1 /* SwiftData.framework */; };
+		069752FF30528B4E00AD21C3 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3FDD00D92EAF506300E14B66 /* SwiftUI.framework */; };
+		0697530030528B4E00AD21C3 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3FDD00D72EAF506300E14B66 /* WidgetKit.framework */; };
+		06FEC716305290CC007E6F3D /* widgetExtension-beta.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 0697530530528B4E00AD21C3 /* widgetExtension-beta.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		3F764C732EB09ED70028EDD1 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3FDD00D72EAF506300E14B66 /* WidgetKit.framework */; };
 		3F764C742EB09ED70028EDD1 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3FDD00D92EAF506300E14B66 /* SwiftUI.framework */; };
 		3F764C832EB09ED80028EDD1 /* widgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 3F764C722EB09ED70028EDD1 /* widgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -14,6 +18,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		06FEC717305290CC007E6F3D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9E61FA012EA75DD200053854 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 069752FB30528B4E00AD21C3;
+			remoteInfo = "widgetExtension-beta";
+		};
 		3F764C812EB09ED80028EDD1 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 9E61FA012EA75DD200053854 /* Project object */;
@@ -24,6 +35,17 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		069752F330528B3500AD21C3 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				06FEC716305290CC007E6F3D /* widgetExtension-beta.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3FDD00EA2EAF506400E14B66 /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -39,6 +61,9 @@
 
 /* Begin PBXFileReference section */
 		015E0F57EE876DE72BF9B652 /* Shared.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Shared.xcconfig; sourceTree = "<group>"; };
+		069752F830528B3500AD21C3 /* batagor-beta.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "batagor-beta.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		06B57A0130528B3500AD21C3 /* Beta.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Beta.xcconfig; sourceTree = "<group>"; };
+		0697530530528B4E00AD21C3 /* widgetExtension-beta.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "widgetExtension-beta.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0CFC889ACA1539CDEE02B8DB /* Local.xcconfig.template */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Local.xcconfig.template; sourceTree = "<group>"; };
 		3F764C722EB09ED70028EDD1 /* widgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = widgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		3F764C8E2EB0A96C0028EDD1 /* SwiftData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftData.framework; path = System/Library/Frameworks/SwiftData.framework; sourceTree = SDKROOT; };
@@ -48,6 +73,49 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		069752FA30528B3600AD21C3 /* Exceptions for "batagor" folder in "batagor-beta" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 069752ED30528B3500AD21C3 /* batagor-beta */;
+		};
+		069752FB30528B4F00AD21C3 /* Exceptions for "batagor" folder in "widgetExtension-beta" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Core/Helpers/TimeFormatter.swift,
+				Core/Services/Storage/ModelContainerService.swift,
+				Core/Services/Storage/StorageManager.swift,
+				Core/Services/System/NavigationManager.swift,
+				"Extensions/Color+Ext.swift",
+				"Extensions/Font+Ext.swift",
+				Models/FlashCycle.swift,
+				Models/PlacemarkInfo.swift,
+				Models/Storage.swift,
+				"Resources/Fonts/SpaceGrotesk-Bold.ttf",
+				"Resources/Fonts/SpaceGrotesk-Light.ttf",
+				"Resources/Fonts/SpaceGrotesk-Medium.ttf",
+				"Resources/Fonts/SpaceGrotesk-Regular.ttf",
+				"Resources/Fonts/SpaceGrotesk-SemiBold.ttf",
+				Views/Shared/CircularProgress.swift,
+			);
+			target = 069752FB30528B4E00AD21C3 /* widgetExtension-beta */;
+		};
+		0697530730528B4F00AD21C3 /* Exceptions for "widget" folder in "widgetExtension-beta" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 069752FB30528B4E00AD21C3 /* widgetExtension-beta */;
+		};
+		06B57A0230528B3600AD21C3 /* Exceptions for "widget" folder in "batagor-beta" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				AppIntent.swift,
+				widgetControl.swift,
+			);
+			target = 069752ED30528B3500AD21C3 /* batagor-beta */;
+		};
 		3F764C872EB09ED80028EDD1 /* Exceptions for "widget" folder in "widgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -99,6 +167,8 @@
 			exceptions = (
 				3FC1B13F2EB8B03400C49E6C /* Exceptions for "widget" folder in "batagor" target */,
 				3F764C872EB09ED80028EDD1 /* Exceptions for "widget" folder in "widgetExtension" target */,
+				0697530730528B4F00AD21C3 /* Exceptions for "widget" folder in "widgetExtension-beta" target */,
+				06B57A0230528B3600AD21C3 /* Exceptions for "widget" folder in "batagor-beta" target */,
 			);
 			path = widget;
 			sourceTree = "<group>";
@@ -108,6 +178,8 @@
 			exceptions = (
 				3F967A022EA78C17009E8E30 /* Exceptions for "batagor" folder in "batagor" target */,
 				3F764C8B2EB0A8DF0028EDD1 /* Exceptions for "batagor" folder in "widgetExtension" target */,
+				069752FA30528B3600AD21C3 /* Exceptions for "batagor" folder in "batagor-beta" target */,
+				069752FB30528B4F00AD21C3 /* Exceptions for "batagor" folder in "widgetExtension-beta" target */,
 			);
 			path = batagor;
 			sourceTree = "<group>";
@@ -115,6 +187,23 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		069752F130528B3500AD21C3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		069752FD30528B4E00AD21C3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				069752FE30528B4E00AD21C3 /* SwiftData.framework in Frameworks */,
+				069752FF30528B4E00AD21C3 /* SwiftUI.framework in Frameworks */,
+				0697530030528B4E00AD21C3 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3F764C6F2EB09ED70028EDD1 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -149,6 +238,7 @@
 			isa = PBXGroup;
 			children = (
 				015E0F57EE876DE72BF9B652 /* Shared.xcconfig */,
+				06B57A0130528B3500AD21C3 /* Beta.xcconfig */,
 				0CFC889ACA1539CDEE02B8DB /* Local.xcconfig.template */,
 			);
 			path = Config;
@@ -170,6 +260,8 @@
 			children = (
 				9E61FA092EA75DD200053854 /* batagor.app */,
 				3F764C722EB09ED70028EDD1 /* widgetExtension.appex */,
+				069752F830528B3500AD21C3 /* batagor-beta.app */,
+				0697530530528B4E00AD21C3 /* widgetExtension-beta.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -177,6 +269,52 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		069752ED30528B3500AD21C3 /* batagor-beta */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 069752F530528B3500AD21C3 /* Build configuration list for PBXNativeTarget "batagor-beta" */;
+			buildPhases = (
+				069752F030528B3500AD21C3 /* Sources */,
+				069752F130528B3500AD21C3 /* Frameworks */,
+				069752F230528B3500AD21C3 /* Resources */,
+				069752F330528B3500AD21C3 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				06FEC718305290CC007E6F3D /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				9E61FA0B2EA75DD200053854 /* batagor */,
+			);
+			name = "batagor-beta";
+			packageProductDependencies = (
+			);
+			productName = batagor;
+			productReference = 069752F830528B3500AD21C3 /* batagor-beta.app */;
+			productType = "com.apple.product-type.application";
+		};
+		069752FB30528B4E00AD21C3 /* widgetExtension-beta */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0697530230528B4E00AD21C3 /* Build configuration list for PBXNativeTarget "widgetExtension-beta" */;
+			buildPhases = (
+				069752FC30528B4E00AD21C3 /* Sources */,
+				069752FD30528B4E00AD21C3 /* Frameworks */,
+				0697530130528B4E00AD21C3 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				3F764C752EB09ED70028EDD1 /* widget */,
+			);
+			name = "widgetExtension-beta";
+			packageProductDependencies = (
+			);
+			productName = widgetExtension;
+			productReference = 0697530530528B4E00AD21C3 /* widgetExtension-beta.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		3F764C712EB09ED70028EDD1 /* widgetExtension */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 3F764C842EB09ED80028EDD1 /* Build configuration list for PBXNativeTarget "widgetExtension" */;
@@ -257,11 +395,27 @@
 			targets = (
 				9E61FA082EA75DD200053854 /* batagor */,
 				3F764C712EB09ED70028EDD1 /* widgetExtension */,
+				069752ED30528B3500AD21C3 /* batagor-beta */,
+				069752FB30528B4E00AD21C3 /* widgetExtension-beta */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		069752F230528B3500AD21C3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0697530130528B4E00AD21C3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3F764C702EB09ED70028EDD1 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -279,6 +433,20 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		069752F030528B3500AD21C3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		069752FC30528B4E00AD21C3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3F764C6E2EB09ED70028EDD1 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -296,6 +464,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		06FEC718305290CC007E6F3D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 069752FB30528B4E00AD21C3 /* widgetExtension-beta */;
+			targetProxy = 06FEC717305290CC007E6F3D /* PBXContainerItemProxy */;
+		};
 		3F764C822EB09ED80028EDD1 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 3F764C712EB09ED70028EDD1 /* widgetExtension */;
@@ -304,6 +477,156 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		069752F630528B3500AD21C3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 06B57A0130528B3500AD21C3 /* Beta.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-Beta";
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
+				CODE_SIGN_ENTITLEMENTS = batagor/batagor-beta.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_ASSET_PATHS = "\"batagor/Resources/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = batagor/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "$(BETA_DISPLAY_NAME)";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_NSCameraUsageDescription = "A Day uses the camera to capture the photos and videos you save to your daily vault.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "A Day tags your photos and videos with the place they were captured.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "A Day uses the microphone to record audio while you capture videos.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "A Day needs permission to add the snaps you choose to save into your photo library.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIRequiresFullScreen = NO;
+				INFOPLIST_KEY_UIStatusBarHidden = NO;
+				INFOPLIST_KEY_UIStatusBarStyle = "";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.fuad.$(BUNDLE_ID_SUFFIX)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		069752F730528B3500AD21C3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 06B57A0130528B3500AD21C3 /* Beta.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-Beta";
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
+				CODE_SIGN_ENTITLEMENTS = batagor/batagor-beta.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_ASSET_PATHS = "\"batagor/Resources/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = batagor/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "$(BETA_DISPLAY_NAME)";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_NSCameraUsageDescription = "A Day uses the camera to capture the photos and videos you save to your daily vault.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "A Day tags your photos and videos with the place they were captured.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "A Day uses the microphone to record audio while you capture videos.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "A Day needs permission to add the snaps you choose to save into your photo library.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIRequiresFullScreen = NO;
+				INFOPLIST_KEY_UIStatusBarHidden = NO;
+				INFOPLIST_KEY_UIStatusBarStyle = "";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.fuad.$(BUNDLE_ID_SUFFIX)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		0697530330528B4E00AD21C3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 06B57A0130528B3500AD21C3 /* Beta.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = widget/widgetExtension-beta.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = widget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "$(BETA_DISPLAY_NAME)";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.fuad.$(BUNDLE_ID_SUFFIX).widget";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		0697530430528B4E00AD21C3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 06B57A0130528B3500AD21C3 /* Beta.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = widget/widgetExtension-beta.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = widget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "$(BETA_DISPLAY_NAME)";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.fuad.$(BUNDLE_ID_SUFFIX).widget";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
 		3F764C852EB09ED80028EDD1 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -576,6 +899,24 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		069752F530528B3500AD21C3 /* Build configuration list for PBXNativeTarget "batagor-beta" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				069752F630528B3500AD21C3 /* Debug */,
+				069752F730528B3500AD21C3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		0697530230528B4E00AD21C3 /* Build configuration list for PBXNativeTarget "widgetExtension-beta" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0697530330528B4E00AD21C3 /* Debug */,
+				0697530430528B4E00AD21C3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		3F764C842EB09ED80028EDD1 /* Build configuration list for PBXNativeTarget "widgetExtension" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

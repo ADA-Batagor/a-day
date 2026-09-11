@@ -1,0 +1,16 @@
+// Signing / identity for the "A Day (Beta)" TestFlight build.
+//
+// Used as the base configuration for the `batagor-beta` and
+// `widgetExtension-beta` targets. This build ships alongside the App Store
+// version on the same device, so it needs its own bundle identifier, its own
+// App Group container, and its own display name.
+//
+// Unlike Shared.xcconfig, this file does NOT include Local.xcconfig — the beta
+// identity must stay fixed regardless of a developer's personal overrides.
+
+BUNDLE_ID_SUFFIX = batagor.beta
+DEVELOPMENT_TEAM = 4D8MTY7F2R
+
+BETA_DISPLAY_NAME = A Day (Beta)
+
+#include "Version.xcconfig"
