@@ -225,3 +225,84 @@ was intended to ship.
 | Release checkpoint | Git tag `vMAJOR.MINOR.PATCH` on `main`                    | `scripts/release.sh` (tagged + pushed after commit)          |
 | Shipped binary     | GitHub Release assets (`.ipa`, `dSYM`) on the tag         | GitHub Actions, on tag push                                  |
 | Release trigger    | `push: tags: 'v*.*.*'` in `.github/workflows/release.yml` | Automatic                                                    |
+| Beta build number  | `CURRENT_PROJECT_VERSION`, stamped at CI time            | `ci_scripts/ci_post_clone.sh` from `$CI_BUILD_NUMBER` (§8)   |
+
+---
+
+## 8. Beta Track: `A Day (Beta)` via Xcode Cloud
+
+There is a second app + widget target pair, **`batagor-beta`** and
+**`widgetExtension-beta`**, that ships to TestFlight as a separate app named
+**A Day (Beta)** so it can sit on the same device next to the App Store build.
+
+### Identity
+
+| | App Store target (`batagor`) | Beta target (`batagor-beta`) |
+| --- | --- | --- |
+| Bundle ID | `com.fuad.batagor` | `com.fuad.batagor.beta` |
+| Widget bundle ID | `com.fuad.batagor.widget` | `com.fuad.batagor.beta.widget` |
+| App Group | `group.com.fuad.$(BUNDLE_ID_SUFFIX)` | `group.com.fuad.batagor.beta` |
+| Display name | `A Day` | `A Day (Beta)` |
+| Base xcconfig | `Config/Shared.xcconfig` | `Config/Beta.xcconfig` |
+| App icon | `AppIcon` | `AppIcon-Beta` |
+
+The beta App Group is **separate on purpose** — the two apps must not share a
+media container, since a schema change in one could corrupt the other's store.
+
+`Config/Beta.xcconfig` sets `BUNDLE_ID_SUFFIX = batagor.beta` and
+`#include "Version.xcconfig"`, so the beta build's `MARKETING_VERSION` always
+tracks the same SemVer as the App Store build. It deliberately does **not**
+include `Shared.xcconfig`/`Local.xcconfig` — the beta identity stays fixed
+regardless of a developer's personal signing overrides.
+
+### Version & build number
+
+- `CFBundleShortVersionString` — same `MARKETING_VERSION` as the App Store
+  build (from `Config/Version.xcconfig`). Bump it the normal way with
+  `scripts/release.sh`.
+- `CFBundleVersion` — **machine-managed for beta builds.**
+  `ci_scripts/ci_post_clone.sh` rewrites `CURRENT_PROJECT_VERSION` to Xcode
+  Cloud's `$CI_BUILD_NUMBER` on the CI checkout (never committed), so every
+  beta upload gets a unique, monotonic build number with no manual bump. Run
+  locally, the script is a no-op.
+
+### CI/CD — Xcode Cloud
+
+The beta track uses **Xcode Cloud**, not the GitHub Actions release workflow
+(that one stays dedicated to tagged App Store releases). Xcode Cloud handles
+signing and the TestFlight upload itself, so no distribution certificate,
+provisioning profile, or `ExportOptions.plist` is needed in the repo.
+
+The workflow is configured once in App Store Connect / Xcode (it is stored
+server-side, not in the repo). Settings:
+
+- **Scheme:** `batagor-beta`
+- **Start condition:** branch changes on `main`
+- **Archive - iOS action:** Distribution Preparation → **`App Store`** (there is
+  no "TestFlight" choice on that screen — `App Store` is what signs the build
+  for App Store Connect).
+- **Post-Action:** **TestFlight Internal Testing** → pick the tester group(s).
+  This is the step that actually pushes each build to TestFlight.
+- The build number is owned by `ci_scripts/ci_post_clone.sh` (from
+  `$CI_BUILD_NUMBER`); there is no build-number toggle on the Archive screen.
+
+The only repo-side artifacts are the hooks in `ci_scripts/` — see
+`ci_scripts/README.md`.
+
+### One-time App Store Connect setup
+
+1. Register the App IDs `com.fuad.batagor.beta` and
+   `com.fuad.batagor.beta.widget` (Xcode auto-creates these on first archive).
+2. Register the App Group `group.com.fuad.batagor.beta` and add it to both
+   App IDs.
+3. Create a new app record with bundle ID `com.fuad.batagor.beta`, then add an
+   Internal Testing group under its TestFlight tab — the Xcode Cloud
+   TestFlight post-action needs both to exist before it can target them.
+4. Create the Xcode Cloud workflow as above.
+
+### App icon requirement
+
+The 1024×1024 icons in `AppIcon-Beta.appiconset` must be **opaque (no alpha
+channel)** or App Store Connect rejects the upload. Flatten with an
+alpha-stripping tool that composites onto an opaque background; do not just
+re-save as PNG.
