@@ -20,7 +20,6 @@ struct DetailView: View {
     @State private var showToolbar: Bool = true
     @State private var showDeleteConfirmation: Bool = false
     @State private var selectedThumbnail: Storage?
-    @State private var selectedVideo: Storage?
     @State private var showSaveToast: Bool = false
     @State private var saveToastMessage: String = ""
     @State private var saveToastIcon: String = "checkmark.circle"
@@ -161,14 +160,8 @@ struct DetailView: View {
                         .onChange(of: selectedStorage) { _, newValue in
                             if let new: Storage = newValue {
                                 HapticManager.shared.impact(.light)
-                                proxy.scrollTo(new.id)
                             }
                         }
-                        .onChange(of: selectedVideo, { _, newValue in
-                            if let _: Storage = newValue {
-                                selectedThumbnail = selectedVideo
-                            }
-                        })
                         
                         .padding(.bottom, isShowedDetail ? 25 : 150)
                     }
@@ -188,7 +181,6 @@ struct DetailView: View {
                             storages: storages,
                             selectedStorage: $selectedStorage,
                             selectedThumbnail: $selectedThumbnail,
-                            selectedVideo: $selectedVideo,
                             geo: geo
                         )
                     }
@@ -205,6 +197,11 @@ struct DetailView: View {
                 } else {
                     RemainingTime(storage: selectedStorage, variant: .large)
                 }
+            }
+        }
+        .onChange(of: storages) { _, newValue in
+            if newValue.isEmpty {
+                showCover = false
             }
         }
         .alert(
