@@ -11,13 +11,14 @@ struct CircularScrollView: View {
     var storages: [Storage]
     @Binding var selectedStorage: Storage?
     @Binding var selectedThumbnail: Storage?
-    @Binding var selectedVideo: Storage?
     var geo: GeometryProxy
     
     @State private var hasScrolledToInitial = false
     @State private var changeFromTap = false
     @State private var borderedThumbnail: Storage?
     @State private var isScrollingSelf = false
+    @State private var isCatchingUp = false
+    @State private var catchUpTask: Task<Void, Never>? = nil
     
     var body: some View {
         ZStack {
@@ -80,15 +81,24 @@ struct CircularScrollView: View {
                     }
                 }
                 .onChange(of: selectedThumbnail) { _, newValue in
-                    borderedThumbnail = selectedStorage
+                    borderedThumbnail = newValue
+                    selectedStorage = newValue
                     if let new = newValue, !isScrollingSelf {
+                        isCatchingUp = true
+                        catchUpTask?.cancel()
+                        catchUpTask = Task {
+                            try? await Task.sleep(nanoseconds: 350_000_000)
+                            if !Task.isCancelled {
+                                isCatchingUp = false
+                            }
+                        }
                         withAnimation {
                             proxy.scrollTo(new.id)
                         }
                     }
                 }
                 .onPreferenceChange(CenterThumbnailPreferenceKey.self) { centers in
-                    if changeFromTap { return }
+                    if changeFromTap || isCatchingUp { return }
                     
                     if let best = centers.min(by: {
                         abs($0.value - (geo.size.width / 2)) < abs($1.value - (geo.size.width / 2))
@@ -103,10 +113,6 @@ struct CircularScrollView: View {
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                                     isScrollingSelf = false
                                 }
-                            }
-                            
-                            if choosen.mainPath.pathExtension == "mp4" {
-                                selectedVideo = choosen
                             }
                         }
                     }
