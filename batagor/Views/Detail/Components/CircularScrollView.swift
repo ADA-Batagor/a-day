@@ -17,6 +17,7 @@ struct CircularScrollView: View {
     @State private var hasScrolledToInitial = false
     @State private var changeFromTap = false
     @State private var borderedThumbnail: Storage?
+    @State private var isScrollingSelf = false
     
     var body: some View {
         ZStack {
@@ -80,7 +81,7 @@ struct CircularScrollView: View {
                 }
                 .onChange(of: selectedThumbnail) { _, newValue in
                     borderedThumbnail = selectedStorage
-                    if let new = newValue {
+                    if let new = newValue, !isScrollingSelf {
                         withAnimation {
                             proxy.scrollTo(new.id)
                         }
@@ -95,6 +96,14 @@ struct CircularScrollView: View {
                         if let choosen = storages.first(where: { $0.id == best.key }), hasScrolledToInitial {
                             selectedStorage = choosen
                             borderedThumbnail = choosen
+                            
+                            if selectedThumbnail != choosen {
+                                isScrollingSelf = true
+                                selectedThumbnail = choosen
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                    isScrollingSelf = false
+                                }
+                            }
                             
                             if choosen.mainPath.pathExtension == "mp4" {
                                 selectedVideo = choosen

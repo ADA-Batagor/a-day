@@ -207,6 +207,11 @@ struct DetailView: View {
                 }
             }
         }
+        .onChange(of: storages) { _, newValue in
+            if newValue.isEmpty {
+                showCover = false
+            }
+        }
         .alert(
             "Photos Access Required",
             isPresented: $showPhotoLibraryPermissionAlert
