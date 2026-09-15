@@ -94,6 +94,11 @@ struct Camera: View {
                                     image
                                         .resizable()
                                         .scaledToFit()
+                                        .overlay {
+                                            if capturingPhoto {
+                                                Color(.black)
+                                            }
+                                        }
                                         .clipShape(RoundedRectangle(cornerRadius: 20))
                                         .padding(.horizontal, 22)
                                         .padding(.top, 12)
@@ -101,11 +106,6 @@ struct Camera: View {
                                             if showFocusIndicator, let point = focusPoint {
                                                 FocusIndicator()
                                                     .offset(x: point.x - 35, y: point.y - 35)
-                                            }
-                                        }
-                                        .overlay {
-                                            if capturingPhoto {
-                                                Color(.black)
                                             }
                                         }
                                         .overlay(alignment: .top) {
